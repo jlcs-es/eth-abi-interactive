@@ -15,6 +15,16 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	abiTreeView.message = "Select a contract and its ABI functions will appear here.";
 
+
+	const disposable0 = vscode.commands.registerCommand('eth-abi-interactive.setEndpoint', async () => {
+		const value = await vscode.window.showInputBox({
+			prompt: `Ethereun node endpoint URI`,
+			value: STATE.endpoint
+		});
+		if (value) {
+			STATE.endpoint = value;
+		}
+	});
 	const disposable1 = vscode.commands.registerCommand('eth-abi-interactive.refreshEntry', () =>
 		contractTreeDataProvider.refresh()
 	);
@@ -44,12 +54,19 @@ export function activate(context: vscode.ExtensionContext) {
 	const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
 
 	const disposable4 = vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
+		let params = [];
+		for (const input of func.abi.inputs) {
+			params.push(`${input.type} ${input.name}`);
+		}
+		channel.appendLine("####################################################################################");
+		channel.appendLine(`Sending transaction ${func.abi.name}(${params.join(", ")}) ...`);
 		channel.appendLine(JSON.stringify(func.abi, undefined, 4));
 		channel.show(true);
 	});
 
 	context.subscriptions.push(contractTreeView);
 	context.subscriptions.push(abiTreeView);
+	context.subscriptions.push(disposable0);
 	context.subscriptions.push(disposable1);
 	context.subscriptions.push(disposable2);
 	context.subscriptions.push(disposable3);

@@ -37,6 +37,11 @@
 		},
 		"commands": [
 			{
+				"command": "eth-abi-interactive.setEndpoint",
+				"title": "Set Eth Endpoint",
+				"icon": "$(plug)"
+			},
+			{
 				"command": "eth-abi-interactive.refreshEntry",
 				"title": "Refresh",
 				"icon": "$(sync)"
@@ -60,6 +65,11 @@
 			"view/title": [
 				{
 					"command": "eth-abi-interactive.refreshEntry",
+					"when": "view == eth-abi-interactive.contracts",
+					"group": "navigation"
+				},
+				{
+					"command": "eth-abi-interactive.setEndpoint",
 					"when": "view == eth-abi-interactive.contracts",
 					"group": "navigation"
 				}
