@@ -18,11 +18,18 @@ export function activate(context: vscode.ExtensionContext) {
 	const disposable1 = vscode.commands.registerCommand('eth-abi-interactive.refreshEntry', () =>
 		contractTreeDataProvider.refresh()
 	);
-	const disposable2 = vscode.commands.registerCommand('eth-abi-interactive.useContract', (node: Contract) => {
-			STATE.currentContract = node.label;
-			abiTreeDataProvider.refresh();
-			abiTreeView.description = node.label;
-			abiTreeView.message = undefined;
+	const disposable2 = vscode.commands.registerCommand('eth-abi-interactive.useContract', async (node: Contract) => {
+		const address = await vscode.window.showInputBox({
+			prompt: `Deployed contract address`
+		});
+		if (!address) {
+			return;
+		}
+		STATE.currentContract = node.label;
+		STATE.contractAddress = address;
+		abiTreeDataProvider.refresh();
+		abiTreeView.description = `${node.label} @ ${address}`;
+		abiTreeView.message = undefined;
 	});
 
 	const disposable3 = vscode.commands.registerCommand('eth-abi-interactive.editInput', async (input: Abi) => {
@@ -34,11 +41,20 @@ export function activate(context: vscode.ExtensionContext) {
 		abiTreeDataProvider.refresh(input);
 	});
 
+	const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
+
+	const disposable4 = vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
+		channel.appendLine(JSON.stringify(func.abi, undefined, 4));
+		channel.show(true);
+	});
+
 	context.subscriptions.push(contractTreeView);
 	context.subscriptions.push(abiTreeView);
 	context.subscriptions.push(disposable1);
 	context.subscriptions.push(disposable2);
 	context.subscriptions.push(disposable3);
+	context.subscriptions.push(disposable4);
+	context.subscriptions.push(channel);
 }
 
 export function deactivate() {}

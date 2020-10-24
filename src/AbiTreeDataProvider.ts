@@ -58,13 +58,13 @@ export class Abi extends vscode.TreeItem {
   ) {
     super(label, collapsibleState);
     this.contextValue = contextValue;
-    this.description = abi.type;
+    if(abi.type === "function") {
+      this.iconPath = new vscode.ThemeIcon("symbol-method");
+    } else {
+      this.description = abi.type;
+      this.iconPath = new vscode.ThemeIcon("symbol-parameter");
+    }
   }
 
   value: any;
-
-  iconPath = {
-    light: path.join(__filename, '..', '..', 'resources', 'light', 'Abi.svg'),
-    dark: path.join(__filename, '..', '..', 'resources', 'dark', 'Abi.svg')
-  };
 }

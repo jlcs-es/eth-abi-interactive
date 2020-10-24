@@ -39,10 +39,7 @@
 			{
 				"command": "eth-abi-interactive.refreshEntry",
 				"title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
+				"icon": "$(sync)"
 			},
 			{
 				"command": "eth-abi-interactive.useContract",
@@ -51,10 +48,12 @@
 			{
 				"command": "eth-abi-interactive.editInput",
 				"title": "Edit input value",
-				"icon": {
-					"light": "resources/light/edit.svg",
-					"dark": "resources/dark/edit.svg"
-				}
+				"icon": "$(edit)"
+			},
+			{
+				"command": "eth-abi-interactive.sendTransaction",
+				"title": "Send transaction",
+				"icon": "$(play)"
 			}
 		],
 		"menus": {
@@ -69,6 +68,11 @@
 				{
 					"command": "eth-abi-interactive.editInput",
 					"when": "view == eth-abi-interactive.abis && viewItem == abiInput",
+					"group": "inline"
+				},
+				{
+					"command": "eth-abi-interactive.sendTransaction",
+					"when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
 					"group": "inline"
 				}
 			]

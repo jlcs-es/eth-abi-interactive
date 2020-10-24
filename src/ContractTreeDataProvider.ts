@@ -110,8 +110,5 @@ export class Contract extends vscode.TreeItem {
     arguments: [this]
   };
 
-  iconPath = {
-    light: path.join(__filename, '..', '..', 'resources', 'light', 'document.svg'),
-    dark: path.join(__filename, '..', '..', 'resources', 'dark', 'document.svg')
-  };
+  iconPath = new vscode.ThemeIcon("file-code");
 }
