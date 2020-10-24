@@ -9,23 +9,29 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": ["onView:eth-abi-interactive"],
+	"activationEvents": [
+		"onView:eth-abi-interactive.contracts"
+	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"viewsContainers": {
 			"activitybar": [
-			  {
-				"id": "eth-abi-interactive-container",
-				"title": "Eth ABI Interactive",
-				"icon": "media/eth.svg"
-			  }
+				{
+					"id": "eth-abi-interactive-container",
+					"title": "Eth ABI Interactive",
+					"icon": "media/eth.svg"
+				}
 			]
 		},
 		"views": {
 			"eth-abi-interactive-container": [
 				{
-					"id": "eth-abi-interactive",
-					"name": "Eth ABI Interactive"
+					"id": "eth-abi-interactive.contracts",
+					"name": "Contracts"
+				},
+				{
+					"id": "eth-abi-interactive.abis",
+					"name": "ABI"
 				}
 			]
 		},
@@ -34,24 +40,36 @@
 				"command": "eth-abi-interactive.refreshEntry",
 				"title": "Refresh",
 				"icon": {
-				  "light": "resources/light/refresh.svg",
-				  "dark": "resources/dark/refresh.svg"
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "eth-abi-interactive.useContract",
+				"title": "Use Contract"
+			},
+			{
+				"command": "eth-abi-interactive.editInput",
+				"title": "Edit input value",
+				"icon": {
+					"light": "resources/light/edit.svg",
+					"dark": "resources/dark/edit.svg"
 				}
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
-				  "command": "eth-abi-interactive.refreshEntry",
-				  "when": "view == eth-abi-interactive",
-				  "group": "navigation"
+					"command": "eth-abi-interactive.refreshEntry",
+					"when": "view == eth-abi-interactive.contracts",
+					"group": "navigation"
 				}
 			],
 			"view/item/context": [
 				{
-				  "command": "eth-abi-interactive.refreshEntry",
-				  "when": "view == eth-abi-interactive && viewItem == contract",
-				  "group": "inline"
+					"command": "eth-abi-interactive.editInput",
+					"when": "view == eth-abi-interactive.abis && viewItem == abiInput",
+					"group": "inline"
 				}
 			]
 		}
@@ -65,13 +83,13 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.50.0",
 		"@types/glob": "^7.1.3",
 		"@types/mocha": "^8.0.0",
 		"@types/node": "^12.11.7",
-		"eslint": "^7.9.0",
+		"@types/vscode": "^1.50.0",
 		"@typescript-eslint/eslint-plugin": "^4.1.1",
 		"@typescript-eslint/parser": "^4.1.1",
+		"eslint": "^7.9.0",
 		"glob": "^7.1.6",
 		"mocha": "^8.1.3",
 		"typescript": "^4.0.2",

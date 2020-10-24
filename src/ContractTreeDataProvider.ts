@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { newConnection, readABI } from './eth';
 
-export class Web3TreeDataProvider implements vscode.TreeDataProvider<Contract> {
+export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contract> {
   constructor(private workspaceRoot: string | undefined) {}
 
   getTreeItem(element: Contract): vscode.TreeItem {
@@ -22,11 +22,7 @@ export class Web3TreeDataProvider implements vscode.TreeDataProvider<Contract> {
         const files = await fs.promises.readdir(dir);
         const leaves = [];
         for (const file of files) {
-          console.log(file);
-          const abi = await readABI(path.join(this.workspaceRoot, 'build/contracts', file));
-          if (abi.length > 0) {
-            leaves.push(new Contract(file, vscode.TreeItemCollapsibleState.None));
-          }
+          leaves.push(new Contract(file, vscode.TreeItemCollapsibleState.None));
         }
         return leaves;
       }
@@ -90,9 +86,16 @@ export class Web3TreeDataProvider implements vscode.TreeDataProvider<Contract> {
     }
     return true;
   }
+
+  private _onDidChangeTreeData: vscode.EventEmitter<Contract | undefined> = new vscode.EventEmitter<Contract | undefined>();
+  readonly onDidChangeTreeData: vscode.Event<Contract | undefined> = this._onDidChangeTreeData.event;
+
+  refresh(): void {
+    this._onDidChangeTreeData.fire(undefined);
+  }
 }
 
-class Contract extends vscode.TreeItem {
+export class Contract extends vscode.TreeItem {
   constructor(
     public readonly label: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState
@@ -101,16 +104,14 @@ class Contract extends vscode.TreeItem {
     this.contextValue = 'contract';
   }
 
-//   get tooltip(): string {
-//     return `${this.label}-${this.version}`;
-//   }
-
-//   get description(): string {
-//     return this.version;
-//   }
+  command = {
+    title: "Use Contract",
+    command: "eth-abi-interactive.useContract",
+    arguments: [this]
+  };
 
   iconPath = {
-    light: path.join(__filename, '..', '..', 'resources', 'light', 'Contract.svg'),
-    dark: path.join(__filename, '..', '..', 'resources', 'dark', 'Contract.svg')
+    light: path.join(__filename, '..', '..', 'resources', 'light', 'document.svg'),
+    dark: path.join(__filename, '..', '..', 'resources', 'dark', 'document.svg')
   };
 }
