@@ -1,0 +1,83 @@
+{
+	"name": "eth-abi-interactive",
+	"displayName": "Eth ABI Interactive",
+	"description": "Interact with deployed Ethereum smart contracts using the ABI",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.50.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": ["onView:eth-abi-interactive"],
+	"main": "./out/extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+			  {
+				"id": "eth-abi-interactive-container",
+				"title": "Eth ABI Interactive",
+				"icon": "media/eth.svg"
+			  }
+			]
+		},
+		"views": {
+			"eth-abi-interactive-container": [
+				{
+					"id": "eth-abi-interactive",
+					"name": "Eth ABI Interactive"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "eth-abi-interactive.refreshEntry",
+				"title": "Refresh",
+				"icon": {
+				  "light": "resources/light/refresh.svg",
+				  "dark": "resources/dark/refresh.svg"
+				}
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+				  "command": "eth-abi-interactive.refreshEntry",
+				  "when": "view == eth-abi-interactive",
+				  "group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+				  "command": "eth-abi-interactive.refreshEntry",
+				  "when": "view == eth-abi-interactive && viewItem == contract",
+				  "group": "inline"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint src --ext ts",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.50.0",
+		"@types/glob": "^7.1.3",
+		"@types/mocha": "^8.0.0",
+		"@types/node": "^12.11.7",
+		"eslint": "^7.9.0",
+		"@typescript-eslint/eslint-plugin": "^4.1.1",
+		"@typescript-eslint/parser": "^4.1.1",
+		"glob": "^7.1.6",
+		"mocha": "^8.1.3",
+		"typescript": "^4.0.2",
+		"vscode-test": "^1.4.0"
+	},
+	"dependencies": {
+		"web3": "^1.3.0"
+	}
+}
