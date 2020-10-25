@@ -26,9 +26,18 @@ export function loadContract(abi: any) {
     STATE.contract = new (STATE.web3.eth.Contract)(abi, STATE.contractAddress);
 }
 
-export function sendTransaction(func: string, ...params: any) {
+export async function sendTransaction(func: string, ...params: any) {
     if (!STATE.contract) {
         return;
     }
-    console.log(STATE.contract.methods[func](...params));
+    const receipt = await STATE.contract.methods[func](...params).send();
+    console.log(receipt);
+}
+
+export async function callMethod(func: string, ...params: any) {
+    if (!STATE.contract) {
+        return;
+    }
+    const result = await STATE.contract.methods[func](...params).call();
+    console.log(result);
 }
