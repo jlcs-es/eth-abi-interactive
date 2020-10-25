@@ -1,9 +1,9 @@
 import Web3 from 'web3';
 import * as fs from 'fs';
+import { STATE } from './state';
 
-export function newConnection() {
-    const web3 = new Web3('http://localhost:8545');
-    return web3;
+export function reconnect() {
+    STATE.web3 = new Web3(STATE.endpoint);
 }
 
 export async function readABI(path: string) {
@@ -20,4 +20,15 @@ export async function readABI(path: string) {
     }
 
     return abi;
+}
+
+export function loadContract(abi: any) {
+    STATE.contract = new (STATE.web3.eth.Contract)(abi, STATE.contractAddress);
+}
+
+export function sendTransaction(func: string, ...params: any) {
+    if (!STATE.contract) {
+        return;
+    }
+    console.log(STATE.contract.methods[func](...params));
 }

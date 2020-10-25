@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { STATE } from './state';
-import { readABI } from './eth';
+import { loadContract, readABI } from './eth';
 
 
 export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
@@ -23,6 +23,7 @@ export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
     if (!element) {
       // Read the ABI and filter functions
       const abi = await readABI(path.join(this.workspaceRoot || ".", 'build/contracts', STATE.currentContract));
+      loadContract(abi);
       for (const entry of abi) {
         if (entry.type === "function") {
           const coll = (entry.inputs && entry.inputs.length)

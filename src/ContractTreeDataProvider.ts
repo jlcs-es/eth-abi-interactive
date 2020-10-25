@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { newConnection, readABI } from './eth';
 
 export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contract> {
   constructor(private workspaceRoot: string | undefined) {}
@@ -29,62 +28,6 @@ export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contrac
     }
 
     return [];
-    // if (element) {
-    //     return this.getDepsInPackageJson(
-    //       path.join(this.workspaceRoot, 'node_modules', element.label, 'package.json')
-    //     );
-    // } else {
-    //   const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
-    //   if (this.pathExists(packageJsonPath)) {
-    //     return this.getDepsInPackageJson(packageJsonPath);
-    //   } else {
-    //     vscode.window.showInformationMessage('Workspace has no package.json');
-    //     return [];
-    //   }
-    // }
-  }
-
-  /**
-   * Given the path to package.json, read all its dependencies and devDependencies.
-   */
-  private getDepsInPackageJson(packageJsonPath: string): Contract[] {
-    if (this.pathExists(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-
-      const toDep = (moduleName: string, version: string): Contract => {
-        if (this.pathExists(path.join(this.workspaceRoot || '', 'node_modules', moduleName))) {
-          return new Contract(
-            moduleName,
-            vscode.TreeItemCollapsibleState.Collapsed
-          );
-        } else {
-          return new Contract(moduleName, vscode.TreeItemCollapsibleState.None);
-        }
-      };
-
-      const deps = packageJson.dependencies
-        ? Object.keys(packageJson.dependencies).map(dep =>
-            toDep(dep, packageJson.dependencies[dep])
-          )
-        : [];
-      const devDeps = packageJson.devDependencies
-        ? Object.keys(packageJson.devDependencies).map(dep =>
-            toDep(dep, packageJson.devDependencies[dep])
-          )
-        : [];
-      return deps.concat(devDeps);
-    } else {
-      return [];
-    }
-  }
-
-  private pathExists(p: string): boolean {
-    try {
-      fs.accessSync(p);
-    } catch (err) {
-      return false;
-    }
-    return true;
   }
 
   private _onDidChangeTreeData: vscode.EventEmitter<Contract | undefined> = new vscode.EventEmitter<Contract | undefined>();
