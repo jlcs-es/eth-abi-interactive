@@ -39,5 +39,5 @@ export async function callMethod(func: string, ...params: any) {
         return;
     }
     const result = await STATE.contract.methods[func](...params).call();
-    console.log(result);
+    return result;
 }

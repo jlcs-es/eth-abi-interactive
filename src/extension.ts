@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { ContractTreeDataProvider, Contract } from './ContractTreeDataProvider';
 import { AbiTreeDataProvider, Abi } from './AbiTreeDataProvider';
 import { STATE } from './state';
-import { sendTransaction } from './eth';
+import { callMethod, sendTransaction } from './eth';
 
 export function activate(context: vscode.ExtensionContext) {
 	const contractTreeDataProvider = new ContractTreeDataProvider(vscode.workspace.rootPath);
@@ -74,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
 	context.subscriptions.push(channel);
-	
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
 			const paramsDesc = [];
@@ -97,8 +97,21 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 			channel.appendLine("####################################################################################");
 			channel.appendLine(`Calling method ${func.abi.name}(${params.join(", ")}) ...`);
-			channel.appendLine(JSON.stringify(func.abi, undefined, 4));
 			channel.show(true);
+			const result = await callMethod(func.abi.name, ...params);
+			// @ts-ignore
+			channel.appendLine(
+				JSON.stringify(result, function(k, v){
+					if (v instanceof Array) {
+						return JSON.stringify(v);
+					}
+					return v;
+				}, 2).replace(/\\/g, '')
+				.replace(/\"\[/g, '[')
+				.replace(/\]\"/g,']')
+				.replace(/\"\{/g, '{')
+				.replace(/\}\"/g,'}')
+			);
 		})
 	);
 
