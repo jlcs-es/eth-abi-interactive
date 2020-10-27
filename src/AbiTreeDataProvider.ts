@@ -29,14 +29,33 @@ export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
           const coll = (entry.inputs && entry.inputs.length)
             ? vscode.TreeItemCollapsibleState.Expanded
             : vscode.TreeItemCollapsibleState.None;
-          leaves.push(new Abi(entry.name, entry, "abiFunction", coll));
+          leaves.push(
+            new Abi(
+              entry.name,
+              entry,
+              "abiFunction",
+              null,
+              [],
+              coll
+            )
+          );
         }
       }
     } else if (element.abi.type === "function") {
       // Given the parent, get the function params
       for (const input of element.abi.inputs) {
-        leaves.push(new Abi(input.name, input, "abiInput", vscode.TreeItemCollapsibleState.None));
+        leaves.push(
+          new Abi(
+            input.name,
+            input,
+            "abiInput",
+            element,
+            [],
+            vscode.TreeItemCollapsibleState.None
+          )
+        );
       }
+      element.children = leaves;
     }
 
     return leaves;
@@ -51,10 +70,13 @@ export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
 }
 
 export class Abi extends vscode.TreeItem {
+  public value: any;
   constructor(
     public readonly label: string,
     public readonly abi: any,
     contextValue: string,
+    public parent: Abi | null,
+    public children: Abi[],
     public readonly collapsibleState: vscode.TreeItemCollapsibleState
   ) {
     super(label, collapsibleState);
@@ -66,6 +88,4 @@ export class Abi extends vscode.TreeItem {
       this.iconPath = new vscode.ThemeIcon("symbol-parameter");
     }
   }
-
-  value: any;
 }

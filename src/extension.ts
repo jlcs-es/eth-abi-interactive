@@ -4,6 +4,21 @@ import { AbiTreeDataProvider, Abi } from './AbiTreeDataProvider';
 import { STATE } from './state';
 import { callMethod, sendTransaction } from './eth';
 
+function printResponse(channel: vscode.OutputChannel, result: any) {
+	channel.appendLine(
+		JSON.stringify(result, function(k, v){
+			if (v instanceof Array) {
+				return JSON.stringify(v);
+			}
+			return v;
+		}, 2).replace(/\\/g, '')
+		.replace(/\"\[/g, '[')
+		.replace(/\]\"/g,']')
+		.replace(/\"\{/g, '{')
+		.replace(/\}\"/g,'}')
+	);
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	const contractTreeDataProvider = new ContractTreeDataProvider(vscode.workspace.rootPath);
 	const contractTreeView = vscode.window.createTreeView('eth-abi-interactive.contracts', {
@@ -77,41 +92,33 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
+			const params = [];
 			const paramsDesc = [];
 			for (const input of func.abi.inputs) {
-				paramsDesc.push(`${input.type} ${input.name}`);
+				paramsDesc.push(`${input.type} as ${input.type} ${input.name}`);
+				params.push(JSON.parse(input.value));
 			}
 			channel.appendLine("####################################################################################");
 			channel.appendLine(`Sending transaction ${func.abi.name}(${paramsDesc.join(", ")}) ...`);
 			channel.appendLine(JSON.stringify(func.abi, undefined, 4));
 			channel.show(true);
-			sendTransaction(func.abi.name, ...paramsDesc);
+			sendTransaction(func.abi.name, ...params);
 		})
 	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.callMethod', async (func: Abi) => {
-			let params = [];
-			for (const input of func.abi.inputs) {
-				params.push(`${input.type} ${input.name}`);
+			const params = [];
+			const paramsDesc = [];
+			for (const input of func.children) {
+				paramsDesc.push(`${input.abi.type} ${input.abi.name} = ${input.value}`);
+				params.push(input.value);
 			}
 			channel.appendLine("####################################################################################");
-			channel.appendLine(`Calling method ${func.abi.name}(${params.join(", ")}) ...`);
+			channel.appendLine(`Calling method ${func.abi.name}(${paramsDesc.join(", ")}) ...`);
 			channel.show(true);
 			const result = await callMethod(func.abi.name, ...params);
-			// @ts-ignore
-			channel.appendLine(
-				JSON.stringify(result, function(k, v){
-					if (v instanceof Array) {
-						return JSON.stringify(v);
-					}
-					return v;
-				}, 2).replace(/\\/g, '')
-				.replace(/\"\[/g, '[')
-				.replace(/\]\"/g,']')
-				.replace(/\"\{/g, '{')
-				.replace(/\}\"/g,'}')
-			);
+			printResponse(channel, result);
 		})
 	);
 

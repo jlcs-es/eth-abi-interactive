@@ -31,7 +31,7 @@ export async function sendTransaction(func: string, ...params: any) {
         return;
     }
     const receipt = await STATE.contract.methods[func](...params).send();
-    console.log(receipt);
+    return receipt;
 }
 
 export async function callMethod(func: string, ...params: any) {
