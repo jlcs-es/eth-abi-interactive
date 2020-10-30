@@ -3,6 +3,7 @@ import { ContractTreeDataProvider, Contract } from './ContractTreeDataProvider';
 import { AbiTreeDataProvider, Abi } from './AbiTreeDataProvider';
 import { STATE } from './state';
 import { callMethod, sendTransaction } from './eth';
+import Web3 from 'web3';
 
 function printResponse(channel: vscode.OutputChannel, result: any) {
 	channel.appendLine(
@@ -52,6 +53,10 @@ export function activate(context: vscode.ExtensionContext) {
 				value: STATE.privateKey
 			});
 			STATE.privateKey = value;
+			if (STATE.privateKey) {
+				STATE.account = STATE.web3.eth.accounts.privateKeyToAccount(STATE.privateKey);
+				STATE.web3.eth.accounts.wallet.add(STATE.account);
+			}
 		})
 	);
 
@@ -100,9 +105,9 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 			channel.appendLine("####################################################################################");
 			channel.appendLine(`Sending transaction ${func.abi.name}(${paramsDesc.join(", ")}) ...`);
-			channel.appendLine(JSON.stringify(func.abi, undefined, 4));
 			channel.show(true);
-			sendTransaction(func.abi.name, ...params);
+			const receipt = await sendTransaction(func.abi.name, ...params);
+			printResponse(channel, receipt);
 		})
 	);
 
