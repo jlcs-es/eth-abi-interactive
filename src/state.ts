@@ -36,8 +36,8 @@ class Status {
         if (conf.has("privateKeysFile")) {
             p = conf.get("privateKeysFile") as string;
         }
-        if(!p || p.length == 0) {
-            p = path.join(require('os').homedir(), '.eth-abi-interactive/keys.json')
+        if(!p || p.length === 0) {
+            p = path.join(require('os').homedir(), '.eth-abi-interactive/keys.json');
             conf.update("privateKeysFile", p);
         }
         return p;
