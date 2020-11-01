@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { STATE } from './state';
 
 export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contract> {
   constructor(private workspaceRoot: string | undefined) {}
@@ -16,7 +17,7 @@ export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contrac
     }
 
     if (!element) {
-      const dir = path.join(this.workspaceRoot, 'build/contracts');
+      const dir = path.join(this.workspaceRoot, STATE.contractsPath);
       if (fs.existsSync(dir)) {
         const files = await fs.promises.readdir(dir);
         const leaves = [];

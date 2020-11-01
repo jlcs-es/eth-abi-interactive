@@ -14,6 +14,28 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"configuration": {
+			"title": "Ethereum ABI Interactive",
+			"properties": {
+				"eth-abi-interactive.privateKeysFile": {
+					"type": "string",
+					"markdownDescription": "File to store private keys used to sign transactions. Keys are encrypted using a master password. They are encrypted via [Web3JS.eth.accounts](https://web3js.readthedocs.io/en/v1.2.0/web3-eth-accounts.html#wallet-encrypt).",
+					"format": "uri"
+				},
+				"eth-abi-interactive.contractsPath": {
+					"type": "string",
+					"description": "Directory where the compiled smart contracts are stored. Relative to workspace root.",
+					"format": "uri",
+					"default": "build/contracts"
+				},
+				"eth-abi-interactive.nodeURI": {
+					"type": "string",
+					"description": "Ethereum node to send transactions to.",
+					"format": "uri",
+					"default": "http://localhost:8545"
+				}
+			}
+		},
 		"viewsContainers": {
 			"activitybar": [
 				{
@@ -42,8 +64,8 @@
 				"icon": "$(plug)"
 			},
 			{
-				"command": "eth-abi-interactive.setPrivateKey",
-				"title": "Set Eth Private Key",
+				"command": "eth-abi-interactive.addPrivateKey",
+				"title": "Add Eth Private Key",
 				"icon": "$(key)"
 			},
 			{
@@ -84,7 +106,7 @@
 					"group": "navigation"
 				},
 				{
-					"command": "eth-abi-interactive.setPrivateKey",
+					"command": "eth-abi-interactive.addPrivateKey",
 					"when": "view == eth-abi-interactive.contracts",
 					"group": "navigation"
 				}

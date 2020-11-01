@@ -3,7 +3,6 @@ import { ContractTreeDataProvider, Contract } from './ContractTreeDataProvider';
 import { AbiTreeDataProvider, Abi } from './AbiTreeDataProvider';
 import { STATE } from './state';
 import { callMethod, sendTransaction } from './eth';
-import Web3 from 'web3';
 
 function printResponse(channel: vscode.OutputChannel, result: any) {
 	channel.appendLine(
@@ -47,15 +46,24 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.setPrivateKey', async () => {
-			const value = await vscode.window.showInputBox({
-				prompt: `Private key of account (leave empty to autogenerate)`,
-				value: STATE.privateKey
+		vscode.commands.registerCommand('eth-abi-interactive.addPrivateKey', async () => {
+			const key = await vscode.window.showInputBox({
+				prompt: `Private key of new account`,
+				password: true
 			});
-			STATE.privateKey = value;
-			if (STATE.privateKey) {
-				STATE.account = STATE.web3.eth.accounts.privateKeyToAccount(STATE.privateKey);
-				STATE.web3.eth.accounts.wallet.add(STATE.account);
+			if(key) {
+				const acc = STATE.web3.eth.accounts.privateKeyToAccount(key);
+				// Should have failed if invalid private key
+				let alias = await vscode.window.showInputBox({
+					prompt: `Alias to identify this account`,
+					value: `Address ${acc.address}`
+				});
+				if(!alias) {
+					alias = `Address ${acc.address}`;
+				}
+				STATE.addAccount(alias, acc);
+				STATE.account = acc;
+				// refresh private keys tree
 			}
 		})
 	);
