@@ -13,8 +13,8 @@ class Status {
     public web3: Web3 = new Web3(); // Web3 instance
     public contract: Contract | undefined; // Current Smart Contract Web3 object
     public account: Account; // Current ethereum account to sign transactions
-    public masterPassword: undefined | string = undefined; // Master password to encrypt/decrypt private keys for accounts
     constructor() {
+        // Default to a random account
         this.account = this.web3.eth.accounts.create();
         this.web3.eth.accounts.wallet.add(this.account);
     }
@@ -51,36 +51,29 @@ class Status {
                 const contents = fs.readFileSync(this.privateKeysFile, 'utf8');
                 keys = JSON.parse(contents);
             } catch(err) {
-                vscode.window.showErrorMessage("Invalid keys file contents");
+                vscode.window.showErrorMessage("Empty or invalid accounts file contents");
+                keys = [];
             }
         }
         return keys;
     }
 
-    // Ask user for the password
-    // TODO: comprobar cuando peta si es incorrecta y poner la contraseña a undefined para que la vuelvan a pedir
-    private async getMasterPassword() {
-        if (!this.masterPassword) {
-            this.masterPassword = await vscode.window.showInputBox({
-                prompt: `Master password to encrypt/decrypt private keys`,
-                password: true
-            });
-        }
-    }
-
     // Add a new account to the file, encrypted with the master password
     public async addAccount(alias: string, ac: Account) {
-        await this.getMasterPassword();
-        if (!this.masterPassword) {
-            vscode.window.showErrorMessage("Empty or invalid master password!");
+        const password = await vscode.window.showInputBox({
+            prompt: `Password to encrypt ${alias}`,
+            password: true
+        });
+        if (!password) {
             return;
         }
         const keys = this.privateKeys;
         keys.push({
             alias: alias,
-            privateKey: ac.encrypt(this.masterPassword)
+            account: ac.encrypt(password)
         });
-        fs.writeFileSync(this.privateKeysFile, JSON.stringify(keys), { encoding: 'utf8' });
+        
+        writeFileSyncRecursive(this.privateKeysFile, JSON.stringify(keys, undefined, 2), 'utf8');
     }
     
     // Get the Ethereum Node Endpoint from settings
@@ -102,3 +95,37 @@ class Status {
 }
 
 export const STATE = new Status(); // Singleton
+
+function writeFileSyncRecursive(filename: string, content: any, charset: string) {
+    // -- normalize path separator to '/' instead of path.sep, 
+    // -- as / works in node for Windows as well, and mixed \\ and / can appear in the path
+    let filepath = filename.replace(/\\/g,'/');  
+
+    // -- preparation to allow absolute paths as well
+    let root = '';
+    if (filepath[0] === '/') { 
+        root = '/'; 
+        filepath = filepath.slice(1);
+    } 
+    else if (filepath[1] === ':') { 
+        root = filepath.slice(0,3);   // c:\
+        filepath = filepath.slice(3); 
+    }
+
+    // -- create folders all the way down
+    const folders = filepath.split('/').slice(0, -1);  // remove last item, file
+    folders.reduce(
+        (acc, folder) => {
+            const folderPath = acc + folder + '/';
+            if (!fs.existsSync(folderPath)) {
+                fs.mkdirSync(folderPath);
+            }
+            return folderPath;
+        },
+        root // first 'acc', important
+    ); 
+
+    // -- write file
+    fs.writeFileSync(root + filepath, content, charset);
+}
+

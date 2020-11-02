@@ -54,6 +54,11 @@
 				{
 					"id": "eth-abi-interactive.abis",
 					"name": "ABI"
+				},
+				{
+					"id": "eth-abi-interactive.accounts",
+					"name": "Accounts",
+					"visibility": "collapsed"
 				}
 			]
 		},
@@ -91,6 +96,15 @@
 				"command": "eth-abi-interactive.callMethod",
 				"title": "Call method (no tx)",
 				"icon": "$(question)"
+			},
+			{
+				"command": "eth-abi-interactive.refreshAccounts",
+				"title": "Refresh",
+				"icon": "$(sync)"
+			},
+			{
+				"command": "eth-abi-interactive.useAccount",
+				"title": "Use account"
 			}
 		],
 		"menus": {
@@ -108,6 +122,11 @@
 				{
 					"command": "eth-abi-interactive.addPrivateKey",
 					"when": "view == eth-abi-interactive.contracts",
+					"group": "navigation"
+				},
+				{
+					"command": "eth-abi-interactive.refreshAccounts",
+					"when": "view == eth-abi-interactive.accounts",
 					"group": "navigation"
 				}
 			],

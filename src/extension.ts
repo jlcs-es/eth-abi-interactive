@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ContractTreeDataProvider, Contract } from './ContractTreeDataProvider';
 import { AbiTreeDataProvider, Abi } from './AbiTreeDataProvider';
+import { AccountTreeDataProvider, Account } from './AccountTreeDataProvider';
 import { STATE } from './state';
 import { callMethod, sendTransaction } from './eth';
 
@@ -33,6 +34,13 @@ export function activate(context: vscode.ExtensionContext) {
 	abiTreeView.message = "Select a contract and its ABI functions will appear here.";
 	context.subscriptions.push(abiTreeView);
 
+	const accountTreeDataProvider = new AccountTreeDataProvider(vscode.workspace.rootPath);
+	const accountTreeView = vscode.window.createTreeView('eth-abi-interactive.accounts', {
+		treeDataProvider: accountTreeDataProvider
+	});
+	accountTreeView.description = "Using random auto generated account";
+	context.subscriptions.push(accountTreeView);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.setEndpoint', async () => {
 			const value = await vscode.window.showInputBox({
@@ -52,18 +60,23 @@ export function activate(context: vscode.ExtensionContext) {
 				password: true
 			});
 			if(key) {
-				const acc = STATE.web3.eth.accounts.privateKeyToAccount(key);
-				// Should have failed if invalid private key
-				let alias = await vscode.window.showInputBox({
-					prompt: `Alias to identify this account`,
-					value: `Address ${acc.address}`
-				});
-				if(!alias) {
-					alias = `Address ${acc.address}`;
+				try {
+					const acc = STATE.web3.eth.accounts.privateKeyToAccount(key);
+					// Should have failed if invalid private key
+					let alias = await vscode.window.showInputBox({
+						prompt: `Alias to identify this account`,
+						value: `Address ${acc.address}`
+					});
+					if(!alias) {
+						alias = `Address ${acc.address}`;
+					}
+					await STATE.addAccount(alias, acc);
+					STATE.account = acc;
+					// refresh private keys tree
+					accountTreeDataProvider.refresh();
+				} catch(err) {
+					vscode.window.showErrorMessage(`Error: ${err.message}`);
 				}
-				STATE.addAccount(alias, acc);
-				STATE.account = acc;
-				// refresh private keys tree
 			}
 		})
 	);
@@ -71,6 +84,11 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.refreshEntry', () =>
 			contractTreeDataProvider.refresh()
+		)
+	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand('eth-abi-interactive.refreshAccounts', () =>
+			accountTreeDataProvider.refresh()
 		)
 	);
 	context.subscriptions.push(
@@ -86,6 +104,18 @@ export function activate(context: vscode.ExtensionContext) {
 			abiTreeDataProvider.refresh();
 			abiTreeView.description = `${node.label} @ ${address}`;
 			abiTreeView.message = undefined;
+		})
+	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand('eth-abi-interactive.useAccount', async (node: Account) => {
+			const password = await vscode.window.showInputBox({
+                prompt: `Password to decrypt ${node.key.alias}`,
+                password: true
+			});
+			if(password) {
+				STATE.account = STATE.web3.eth.accounts.decrypt(node.key.account, password);
+				accountTreeView.description = `Using ${node.key.alias}`;
+			}
 		})
 	);
 
