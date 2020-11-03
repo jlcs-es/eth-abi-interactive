@@ -133,35 +133,47 @@ export function activate(context: vscode.ExtensionContext) {
 	const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
 	context.subscriptions.push(channel);
 
+	function getParams(func: Abi) {
+		const params = [];
+		const paramsDesc = [];
+		for (const input of func.children) {
+			paramsDesc.push(`${input.abi.type} ${input.abi.name} = ${input.value}`);
+			if(input.abi.type === "bool") {
+				params.push(JSON.parse(input.value));
+			} else {
+				params.push(input.value);
+			}
+		}
+		return { params, paramsDesc };
+	}
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
-			const params = [];
-			const paramsDesc = [];
-			for (const input of func.abi.inputs) {
-				paramsDesc.push(`${input.type} as ${input.type} ${input.name}`);
-				params.push(JSON.parse(input.value));
-			}
+			const { params, paramsDesc } = getParams(func);
 			channel.appendLine("####################################################################################");
 			channel.appendLine(`Sending transaction ${func.abi.name}(${paramsDesc.join(", ")}) ...`);
 			channel.show(true);
-			const receipt = await sendTransaction(func.abi.name, ...params);
-			printResponse(channel, receipt);
+			try {
+				const receipt = await sendTransaction(func.abi.name, ...params);
+				printResponse(channel, receipt);
+			} catch (error) {
+				channel.appendLine(`ERROR ${error.message}`);
+			}
 		})
 	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.callMethod', async (func: Abi) => {
-			const params = [];
-			const paramsDesc = [];
-			for (const input of func.children) {
-				paramsDesc.push(`${input.abi.type} ${input.abi.name} = ${input.value}`);
-				params.push(input.value);
-			}
+			const { params, paramsDesc } = getParams(func);
 			channel.appendLine("####################################################################################");
 			channel.appendLine(`Calling method ${func.abi.name}(${paramsDesc.join(", ")}) ...`);
 			channel.show(true);
-			const result = await callMethod(func.abi.name, ...params);
-			printResponse(channel, result);
+			try {
+				const result = await callMethod(func.abi.name, ...params);
+				printResponse(channel, result);
+			} catch (error) {
+				channel.appendLine(`ERROR ${error.message}`);
+			}
 		})
 	);
 
