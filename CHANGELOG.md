@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.2] - Initial release
+
+Fix extension icon
+
 ## [0.0.1] - Initial release
 
 - Basic functionallity
