@@ -1,9 +1,7 @@
 # Change Log
 
-All notable changes to the "eth-abi-interactive" extension will be documented in this file.
+## [0.0.1] - Initial release
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+- Basic functionallity
+- Manage accounts with Web3JS. Never store passwords.
+- Call functions or Send transactions for mining.

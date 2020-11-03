@@ -2,6 +2,7 @@
 	"name": "eth-abi-interactive",
 	"displayName": "Eth ABI Interactive",
 	"description": "Interact with deployed Ethereum smart contracts using the ABI",
+	"license": "MIT",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.50.0"
@@ -121,7 +122,7 @@
 				},
 				{
 					"command": "eth-abi-interactive.addPrivateKey",
-					"when": "view == eth-abi-interactive.contracts",
+					"when": "view == eth-abi-interactive.accounts",
 					"group": "navigation"
 				},
 				{

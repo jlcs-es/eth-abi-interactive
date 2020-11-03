@@ -1,65 +1,64 @@
-# eth-abi-interactive README
+# Eth ABI Interactive
 
-This is the README for your extension "eth-abi-interactive". After writing up a brief description, we recommend including the following sections.
+Interact with deployed Ethereum smart contracts using the ABI
 
-## Features
+## Workflow
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+![Gif](images/screen-capture.gif)
 
-For example if there is an image subfolder under your extension project workspace:
+First, compile your smart contracts (e.g. with Truffle) or open a workspace with the ABI files.
 
-\!\[feature X\]\(images/feature-x.png\)
+```
+truffle compile
+```
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Use your prefered method of deployment. For example, Truffle Migrations.
 
-## Requirements
+```
+truffle migrate
+```
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Click on the sidebar Ethereum icon. Your compiled ABI files will be listed.
+
+Click on any of them. You will be asked for the Smart Contract deployed address. You can find it from your migrations/deployment step.
+
+![Workspace](images/workspace.png)
+
+
+The Smart Contract ABI will be displayed. Here, you have one entry per function, and inside each one, one entry per argument.
+
+Choose a function, edit its parameters and click the `Call method` icon next to it. This will send a transaction without mining it in the blockchain. This way, you can check if it will be successful.
+
+Now, click the `Send transaction` icon to mine it.
+
+All output will appear in the `Eth ABI Interactive` Output Channel, right next to your Terminal tab.
+
+![Call and Send Tx](images/callAndSend.png)
+
+
+## Accounts management
+
+By default, a random Ethereum account is used to sign transactions. Of course, this is not useful when trying to transact as a specific user.
+
+The _Accounts_ Tree shows a list of stored accounts for the user. You can add a new account clicking on the _key_ icon. You will be asked for:
+
+- The private key
+- An alias (will default to the derived address)
+- An encryption password
+
+![New Account](images/newPrivKey.png)
+
+When choosing an account from the list, you will be asked for its decryption password (same one as encryption). Then, the tab description will prompt that it is using the selected account.
+
+![Using root](images/usingRoot.png)
+
+> ! These accounts are encrypted using [web3.eth.accounts](https://web3js.readthedocs.io/en/v1.2.11/web3-eth-accounts.html), which has NOT been audited and might potentially be unsafe. This is to be used ONLY for development purposes.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+* `eth-abi-interactive.privateKeysFile`: File to store private keys used to sign transactions. Keys are encrypted using a master password. They are encrypted via [Web3JS.eth.accounts](https://web3js.readthedocs.io/en/v1.2.0/web3-eth-accounts.html#wallet-encrypt). Will default to `$HOME/.eth-abi-interactive/keys.json`.
+* `eth-abi-interactive.contractsPath`: Directory where the compiled smart contracts are stored. Relative to workspace root. Will default to Truffle's `build/contracts`.
+* `eth-abi-interactive.nodeURI`: Ethereum node to send transactions to. Defaults to `http://localhost:8545`.
 
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
