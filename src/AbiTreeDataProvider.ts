@@ -4,6 +4,10 @@ import { STATE } from './state';
 import { loadContract, readABI, reconnect } from './eth';
 
 
+let ethcodeExtension: any = vscode.extensions.getExtension('7finney.ethcode');
+const api: any = ethcodeExtension.exports;
+
+
 export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
   constructor(private workspaceRoot: string | undefined) {}
 
@@ -12,6 +16,7 @@ export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
   }
 
   async getChildren(element?: Abi): Promise<Abi[]> {
+
     if (!STATE.currentContract) {
       return [];
     }
@@ -21,7 +26,8 @@ export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
     // Root tree element
     if (!element) {
       // Read the ABI and filter functions
-      const abi = await readABI(path.join(this.workspaceRoot || ".", 'build/contracts', STATE.currentContract));
+      
+      const abi = await api.contract.abi(STATE.currentContract);
       reconnect();
       loadContract(abi);
       for (const entry of abi) {

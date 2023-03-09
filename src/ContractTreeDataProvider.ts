@@ -6,7 +6,6 @@ import { STATE } from './state';
 let ethcodeExtension: any = vscode.extensions.getExtension('7finney.ethcode');
 const api: any = ethcodeExtension.exports;
 
-
 export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contract> {
   constructor(private workspaceRoot: string | undefined) {}
 
@@ -15,21 +14,20 @@ export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contrac
   }
 
   async getChildren(element?: Contract): Promise<Contract[]> {
-
     let contracts:string[] = await api.contract.list();
-
-    if (contracts.length > 0) {
-      const leaves = [];
-      for (const file of contracts) {
-        leaves.push(new Contract(file, vscode.TreeItemCollapsibleState.None));
-      }
-      return leaves;
-    }
-    else{
-      vscode.window.showInformationMessage('No Contracts found');
+    if (contracts.length === 0) {
+      vscode.window.showInformationMessage('No Contracts in empty workspace');
       return [];
     }
-  }
+
+    else {
+        const leaves = [];
+        for (const file of contracts) {
+          leaves.push(new Contract(file, vscode.TreeItemCollapsibleState.None));
+        }
+        return leaves;
+      }
+    }
 
   private _onDidChangeTreeData: vscode.EventEmitter<Contract | undefined> = new vscode.EventEmitter<Contract | undefined>();
   readonly onDidChangeTreeData: vscode.Event<Contract | undefined> = this._onDidChangeTreeData.event;
