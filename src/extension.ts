@@ -5,6 +5,9 @@ import { AccountTreeDataProvider, Account } from './AccountTreeDataProvider';
 import { STATE } from './state';
 import { callMethod, sendTransaction } from './eth';
 
+let ethcodeExtension: any = vscode.extensions.getExtension('7finney.ethcode');
+const api: any = ethcodeExtension.exports;
+
 function printResponse(channel: vscode.OutputChannel, result: any) {
 	channel.appendLine(
 		JSON.stringify(result, function(k, v){
@@ -41,8 +44,11 @@ export function activate(context: vscode.ExtensionContext) {
 	accountTreeView.description = "Using random auto generated account";
 	context.subscriptions.push(accountTreeView);
 
+	
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.setEndpoint', async () => {
+			vscode.window.showInformationMessage(api.status || "No ethcode extension found");
 			const value = await vscode.window.showInputBox({
 				prompt: `Ethereun node endpoint URI`,
 				value: STATE.endpoint
@@ -55,6 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.addPrivateKey', async () => {
+			
 			const key = await vscode.window.showInputBox({
 				prompt: `Private key of new account`,
 				password: true

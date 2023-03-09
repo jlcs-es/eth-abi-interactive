@@ -19,6 +19,9 @@
 	"activationEvents": [
 		"onView:eth-abi-interactive.contracts"
 	],
+	"extensionDependencies": [
+		"7finney.ethcode"
+	  ],
 	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {

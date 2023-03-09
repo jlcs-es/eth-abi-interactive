@@ -3,6 +3,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { STATE } from './state';
 
+let ethcodeExtension: any = vscode.extensions.getExtension('7finney.ethcode');
+const api: any = ethcodeExtension.exports;
+
+
 export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contract> {
   constructor(private workspaceRoot: string | undefined) {}
 
@@ -11,24 +15,20 @@ export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contrac
   }
 
   async getChildren(element?: Contract): Promise<Contract[]> {
-    if (!this.workspaceRoot) {
-      vscode.window.showInformationMessage('No Contracts in empty workspace');
+
+    let contracts:string[] = await api.contract.list();
+
+    if (contracts.length > 0) {
+      const leaves = [];
+      for (const file of contracts) {
+        leaves.push(new Contract(file, vscode.TreeItemCollapsibleState.None));
+      }
+      return leaves;
+    }
+    else{
+      vscode.window.showInformationMessage('No Contracts found');
       return [];
     }
-
-    if (!element) {
-      const dir = path.join(this.workspaceRoot, STATE.contractsPath);
-      if (fs.existsSync(dir)) {
-        const files = await fs.promises.readdir(dir);
-        const leaves = [];
-        for (const file of files) {
-          leaves.push(new Contract(file, vscode.TreeItemCollapsibleState.None));
-        }
-        return leaves;
-      }
-    }
-
-    return [];
   }
 
   private _onDidChangeTreeData: vscode.EventEmitter<Contract | undefined> = new vscode.EventEmitter<Contract | undefined>();
