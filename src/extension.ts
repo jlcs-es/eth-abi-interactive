@@ -74,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
 					STATE.account = acc;
 					// refresh private keys tree
 					accountTreeDataProvider.refresh();
-				} catch(err) {
+				} catch(err : any) {
 					vscode.window.showErrorMessage(`Error: ${err.message}`);
 				}
 			}
@@ -156,7 +156,7 @@ export function activate(context: vscode.ExtensionContext) {
 			try {
 				const receipt = await sendTransaction(func.abi.name, ...params);
 				printResponse(channel, receipt);
-			} catch (error) {
+			} catch (error : any) {
 				channel.appendLine(`ERROR ${error.message}`);
 			}
 		})
@@ -171,7 +171,7 @@ export function activate(context: vscode.ExtensionContext) {
 			try {
 				const result = await callMethod(func.abi.name, ...params);
 				printResponse(channel, result);
-			} catch (error) {
+			} catch (error : any) {
 				channel.appendLine(`ERROR ${error.message}`);
 			}
 		})
