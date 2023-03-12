@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
+import { myEmitter } from './NodeDependenciesProvider';
 import { STATE } from './state';
-import { loadContract, readABI, reconnect } from './eth';
 
 
 let ethcodeExtension: any = vscode.extensions.getExtension('7finney.ethcode');
@@ -16,20 +15,10 @@ export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
   }
 
   async getChildren(element?: Abi): Promise<Abi[]> {
-
-    if (!STATE.currentContract) {
-      return [];
-    }
-
     const leaves = [];
 
-    // Root tree element
     if (!element) {
-      // Read the ABI and filter functions
-      
       const abi = await api.contract.abi(STATE.currentContract);
-      reconnect();
-      loadContract(abi);
       for (const entry of abi) {
         if (entry.type === "function") {
           const coll = (entry.inputs && entry.inputs.length)

@@ -21,30 +21,11 @@
 	],
 	"extensionDependencies": [
 		"7finney.ethcode"
-	  ],
+	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {
-			"title": "Ethereum ABI Interactive",
-			"properties": {
-				"eth-abi-interactive.privateKeysFile": {
-					"type": "string",
-					"markdownDescription": "File to store private keys used to sign transactions. Keys are encrypted using a master password. They are encrypted via [Web3JS.eth.accounts](https://web3js.readthedocs.io/en/v1.2.0/web3-eth-accounts.html#wallet-encrypt).",
-					"format": "uri"
-				},
-				"eth-abi-interactive.contractsPath": {
-					"type": "string",
-					"description": "Directory where the compiled smart contracts are stored. Relative to workspace root.",
-					"format": "uri",
-					"default": "build/contracts"
-				},
-				"eth-abi-interactive.nodeURI": {
-					"type": "string",
-					"description": "Ethereum node to send transactions to.",
-					"format": "uri",
-					"default": "http://localhost:8545"
-				}
-			}
+			"title": "Ethereum ABI Interactive"
 		},
 		"viewsContainers": {
 			"activitybar": [
@@ -63,12 +44,12 @@
 				},
 				{
 					"id": "eth-abi-interactive.abis",
-					"name": "ABI"
+					"name": "ABI",
+					"visibility": "collapsed"
 				},
 				{
-					"id": "eth-abi-interactive.accounts",
-					"name": "Accounts",
-					"visibility": "collapsed"
+					"id": "eth-abi-interactive.pendingTxn",
+					"name": "Pending Transactions"
 				}
 			]
 		},
@@ -79,42 +60,13 @@
 				"icon": "$(plug)"
 			},
 			{
-				"command": "eth-abi-interactive.addPrivateKey",
-				"title": "Add Eth Private Key",
-				"icon": "$(key)"
-			},
-			{
-				"command": "eth-abi-interactive.refreshEntry",
-				"title": "Refresh",
-				"icon": "$(sync)"
+				"command": "eth-abi-interactive.refreshTreeView",
+				"title": "Stop",
+				"icon": "$(debug-pause)"
 			},
 			{
 				"command": "eth-abi-interactive.useContract",
 				"title": "Use Contract"
-			},
-			{
-				"command": "eth-abi-interactive.editInput",
-				"title": "Edit input value",
-				"icon": "$(edit)"
-			},
-			{
-				"command": "eth-abi-interactive.sendTransaction",
-				"title": "Send transaction",
-				"icon": "$(play)"
-			},
-			{
-				"command": "eth-abi-interactive.callMethod",
-				"title": "Call method (no tx)",
-				"icon": "$(question)"
-			},
-			{
-				"command": "eth-abi-interactive.refreshAccounts",
-				"title": "Refresh",
-				"icon": "$(sync)"
-			},
-			{
-				"command": "eth-abi-interactive.useAccount",
-				"title": "Use account"
 			}
 		],
 		"menus": {
@@ -122,6 +74,11 @@
 				{
 					"command": "eth-abi-interactive.refreshEntry",
 					"when": "view == eth-abi-interactive.contracts",
+					"group": "navigation"
+				},
+				{
+					"command": "eth-abi-interactive.refreshTreeView",
+					"when": "view == eth-abi-interactive.pendingTxn",
 					"group": "navigation"
 				},
 				{
@@ -140,23 +97,7 @@
 					"group": "navigation"
 				}
 			],
-			"view/item/context": [
-				{
-					"command": "eth-abi-interactive.editInput",
-					"when": "view == eth-abi-interactive.abis && viewItem == abiInput",
-					"group": "inline"
-				},
-				{
-					"command": "eth-abi-interactive.sendTransaction",
-					"when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
-					"group": "inline"
-				},
-				{
-					"command": "eth-abi-interactive.callMethod",
-					"when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
-					"group": "inline"
-				}
-			]
+			"view/item/context": []
 		}
 	},
 	"scripts": {
@@ -172,6 +113,7 @@
 		"@types/mocha": "^8.0.0",
 		"@types/node": "^12.11.7",
 		"@types/vscode": "^1.50.0",
+		"@types/ws": "^8.5.4",
 		"@typescript-eslint/eslint-plugin": "^4.1.1",
 		"@typescript-eslint/parser": "^4.1.1",
 		"eslint": "^7.9.0",
@@ -181,6 +123,9 @@
 		"vscode-test": "^1.4.0"
 	},
 	"dependencies": {
-		"web3": "^1.3.0"
+		"alchemy-sdk": "^2.6.1",
+		"bnc-sdk": "^4.6.7",
+		"web3": "^1.3.0",
+		"ws": "^8.12.1"
 	}
 }

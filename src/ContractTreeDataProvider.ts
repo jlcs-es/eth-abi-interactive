@@ -1,7 +1,4 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-import { STATE } from './state';
 
 let ethcodeExtension: any = vscode.extensions.getExtension('7finney.ethcode');
 const api: any = ethcodeExtension.exports;
