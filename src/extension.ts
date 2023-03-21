@@ -19,9 +19,6 @@ const api: any = ethcodeExtension.exports;
 
 
 export function activate(context: vscode.ExtensionContext) {
-
-	console.log(STATE.contractAddress);
-
 	const contractTreeDataProvider = new ContractTreeDataProvider(vscode.workspace.rootPath);
 	const contractTreeView = vscode.window.createTreeView('eth-abi-interactive.contracts', {
 		treeDataProvider: contractTreeDataProvider
@@ -70,7 +67,6 @@ export function activate(context: vscode.ExtensionContext) {
 			pendingTransactionTreeView.description = `${node.label} @ ${address}`;
 			pendingTransactionTreeView.message = undefined;
 			STATE.flag = true;
-
 		})
 	);
 
@@ -79,168 +75,169 @@ export function activate(context: vscode.ExtensionContext) {
 		alchemy.ws.removeAllListeners();
 	}));
 
-	alchemy.ws.on(
-		{
-			method: AlchemySubscription.PENDING_TRANSACTIONS,
-			toAddress: "0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b",
-		},
-		(tx) => {
-			if (STATE.flag) {
-				console.log(tx);
-				let obj = {
-					label: tx.hash,
-					collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-					children: [
-						{
-							label: `from`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.from,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `gas`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.gas,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `gasPrice`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.gasPrice,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `maxFeePerGas`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.maxFeePerGas,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `maxPriorityFeePerGas`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.maxPriorityFeePerGas,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `hash`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.hash,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `input`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.input,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `nonce`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.nonce,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `to`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.to,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `value`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.value,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `type`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.type,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `v`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.v,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `r`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.r,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-						{
-							label: `s`,
-							collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-							children: [
-								{
-									label: tx.s,
-									collapsibleState: vscode.TreeItemCollapsibleState.None
-								}
-							]
-						},
-					]
-				};
-				console.log(obj);
-				myEmitter.emit('newPendingTransaction', obj);
-			}
-		}
-	);
-	myEmitter.on('newPendingTransaction', (arg) => {
-		pendingTransactionDataProvider.loadData(arg);
-	});
+	// alchemy.ws.on(
+	// 	{
+	// 		method: AlchemySubscription.PENDING_TRANSACTIONS,
+	// 		// toAddress: "0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b",
+	// 		toAddress: STATE.contractAddress,
+	// 	},
+	// 	(tx) => {
+	// 		if (STATE.flag) {
+	// 			console.log(tx);
+	// 			let obj = {
+	// 				label: tx.hash,
+	// 				collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 				children: [
+	// 					{
+	// 						label: `from`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.from,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `gas`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.gas,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `gasPrice`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.gasPrice,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `maxFeePerGas`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.maxFeePerGas,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `maxPriorityFeePerGas`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.maxPriorityFeePerGas,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `hash`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.hash,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `input`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.input,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `nonce`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.nonce,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `to`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.to,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `value`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.value,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `type`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.type,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `v`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.v,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `r`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.r,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 					{
+	// 						label: `s`,
+	// 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+	// 						children: [
+	// 							{
+	// 								label: tx.s,
+	// 								collapsibleState: vscode.TreeItemCollapsibleState.None
+	// 							}
+	// 						]
+	// 					},
+	// 				]
+	// 			};
+	// 			console.log(obj);
+	// 			myEmitter.emit('newPendingTransaction', obj);
+	// 		}
+	// 	}
+	// );
+	// myEmitter.on('newPendingTransaction', (arg) => {
+	// 	pendingTransactionDataProvider.loadData(arg);
+	// });
 
 	const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
 	context.subscriptions.push(channel);
