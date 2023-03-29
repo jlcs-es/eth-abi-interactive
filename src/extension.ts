@@ -1,10 +1,13 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import path from "path";
 import { ContractTreeDataProvider, Contract } from "./ContractTreeDataProvider";
 import { AbiTreeDataProvider, Abi } from "./AbiTreeDataProvider";
 import { STATE } from "./state";
 import { PendingTransactionTreeDataProvider } from "./NodeDependenciesProvider";
 import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
 import { myEmitter } from "./NodeDependenciesProvider";
+import { getSourceName } from "./utils/functions";
 
 const settings = {
   apiKey: "2BfT7PmhS5UzBkXbguSIXm5Nk3myk0ey",
@@ -17,6 +20,12 @@ let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
 
 export function activate(context: vscode.ExtensionContext) {
+  const path_ = vscode.workspace.workspaceFolders;
+  if (path_ === undefined) {
+    vscode.window.showErrorMessage("No folder selected please open one.");
+    return;
+  }
+
   const contractTreeDataProvider = new ContractTreeDataProvider(
     vscode.workspace.rootPath
   );
@@ -81,6 +90,10 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "eth-abi-interactive.useContract",
       async (node: Contract) => {
+        const isFilePresent = getSourceName(node.label);
+        if (isFilePresent === false) {
+          await api.contract.selectContract(node.label);
+        }
         const address = await api.contract.getContractAddress(node.label);
         STATE.currentContract = node.label;
         STATE.contractAddress = address;
