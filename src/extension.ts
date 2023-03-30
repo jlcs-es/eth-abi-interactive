@@ -90,7 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "eth-abi-interactive.useContract",
       async (node: Contract) => {
-        const isFilePresent = getSourceName(node.label);
+        const isFilePresent = await getSourceName(node.label);
         if (isFilePresent === false) {
           await api.contract.selectContract(node.label);
         }

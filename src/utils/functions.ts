@@ -1,13 +1,15 @@
+import vscode from "vscode";
 import * as fs from "fs";
 import path from "path";
 import { window, workspace } from "vscode";
 
-export const getSourceName = (contractTitle: string) => {
+const CONTRACT_FILES = ["deployed_address.json", "functions_input.json"];
+
+export const getSourceName = async (contractTitle: string) => {
   if (workspace.workspaceFolders === undefined) {
-    window.showErrorMessage("please open solidity project to work");
+    window.showErrorMessage("open a project");
     return;
   }
-
   const path_ = workspace.workspaceFolders[0].uri.fsPath;
   if (fs.existsSync(path.join(path_, "cache", "solidity-files-cache.json"))) {
     const file = JSON.parse(
@@ -19,21 +21,37 @@ export const getSourceName = (contractTitle: string) => {
       )
     );
     const data = JSON.parse(file);
-    const filePathArray: any = Object.values(data.files).filter(
-      (data: any) => data.artifacts[0] === contractTitle
+    const filePathArray: any = Object.values(data.files).filter((data: any) =>
+      data.artifacts.includes(contractTitle)
     );
 
     const sourceName: string = filePathArray[0].sourceName;
 
-    return fs.existsSync(
+    const result = await isAllFilesPresent(path_, sourceName, contractTitle);
+
+    return result;
+  } else {
+    window.showErrorMessage("No Hardhat cache file present.");
+  }
+};
+
+const isAllFilesPresent = async (
+  path_: string,
+  sourceName: string,
+  contractTitle: string
+) => {
+  const isPresent = CONTRACT_FILES.map((fileFormat) => {
+    const isFilePresent = fs.existsSync(
       path.join(
         path_,
         "artifacts",
         sourceName,
-        `${contractTitle}_deployed_address.json`
+        `${contractTitle}_${fileFormat}`
       )
     );
-  } else {
-    window.showErrorMessage("No Hardhat cache file present.");
-  }
+    return isFilePresent;
+  });
+
+  const result = isPresent.filter((condition) => condition === false);
+  return result[0];
 };
