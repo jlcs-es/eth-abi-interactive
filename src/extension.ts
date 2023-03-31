@@ -1,182 +1,303 @@
-import * as vscode from 'vscode';
-import { ContractTreeDataProvider, Contract } from './ContractTreeDataProvider';
-import { AbiTreeDataProvider, Abi } from './AbiTreeDataProvider';
-import { AccountTreeDataProvider, Account } from './AccountTreeDataProvider';
-import { STATE } from './state';
-import { callMethod, sendTransaction } from './eth';
+import * as vscode from "vscode";
+import * as fs from "fs";
+import path from "path";
+import { ContractTreeDataProvider, Contract } from "./ContractTreeDataProvider";
+import { AbiTreeDataProvider, Abi } from "./AbiTreeDataProvider";
+import { STATE } from "./state";
+import { PendingTransactionTreeDataProvider } from "./NodeDependenciesProvider";
+import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+import { myEmitter } from "./NodeDependenciesProvider";
+import { getSourceName } from "./utils/functions";
 
-function printResponse(channel: vscode.OutputChannel, result: any) {
-	channel.appendLine(
-		JSON.stringify(result, function(k, v){
-			if (v instanceof Array) {
-				return JSON.stringify(v);
-			}
-			return v;
-		}, 2).replace(/\\/g, '')
-		.replace(/\"\[/g, '[')
-		.replace(/\]\"/g,']')
-		.replace(/\"\{/g, '{')
-		.replace(/\}\"/g,'}')
-	);
-}
+const settings = {
+  apiKey: "2BfT7PmhS5UzBkXbguSIXm5Nk3myk0ey",
+  network: Network.ETH_MAINNET,
+};
+
+const alchemy = new Alchemy(settings);
+
+let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
+const api: any = ethcodeExtension.exports;
 
 export function activate(context: vscode.ExtensionContext) {
-	const contractTreeDataProvider = new ContractTreeDataProvider(vscode.workspace.rootPath);
-	const contractTreeView = vscode.window.createTreeView('eth-abi-interactive.contracts', {
-		treeDataProvider: contractTreeDataProvider
-	});
-	context.subscriptions.push(contractTreeView);
+  const path_ = vscode.workspace.workspaceFolders;
+  if (path_ === undefined) {
+    vscode.window.showErrorMessage("No folder selected please open one.");
+    return;
+  }
 
-	const abiTreeDataProvider = new AbiTreeDataProvider(vscode.workspace.rootPath);
-	const abiTreeView = vscode.window.createTreeView('eth-abi-interactive.abis', {
-		treeDataProvider: abiTreeDataProvider
-	});
-	abiTreeView.message = "Select a contract and its ABI functions will appear here.";
-	context.subscriptions.push(abiTreeView);
+  const contractTreeDataProvider = new ContractTreeDataProvider(
+    vscode.workspace.rootPath
+  );
+  let contractTreeView = vscode.window.createTreeView(
+    "eth-abi-interactive.contracts",
+    {
+      treeDataProvider: contractTreeDataProvider,
+    }
+  );
+  api.events.contracts.event(() => {
+    contractTreeView = vscode.window.createTreeView(
+      "eth-abi-interactive.contracts",
+      {
+        treeDataProvider: contractTreeDataProvider,
+      }
+    );
+  });
+  context.subscriptions.push(contractTreeView as any);
 
-	const accountTreeDataProvider = new AccountTreeDataProvider(vscode.workspace.rootPath);
-	const accountTreeView = vscode.window.createTreeView('eth-abi-interactive.accounts', {
-		treeDataProvider: accountTreeDataProvider
-	});
-	accountTreeView.description = "Using random auto generated account";
-	context.subscriptions.push(accountTreeView);
+  const abiTreeDataProvider = new AbiTreeDataProvider(
+    vscode.workspace.rootPath
+  );
+  const abiTreeView = vscode.window.createTreeView("eth-abi-interactive.abis", {
+    treeDataProvider: abiTreeDataProvider,
+  });
+  abiTreeView.message =
+    "Select a contract and its ABI functions will appear here.";
+  context.subscriptions.push(abiTreeView);
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.setEndpoint', async () => {
-			const value = await vscode.window.showInputBox({
-				prompt: `Ethereun node endpoint URI`,
-				value: STATE.endpoint
-			});
-			if (value) {
-				STATE.endpoint = value;
-			}
-		})
-	);
+  const pendingTransactionDataProvider =
+    new PendingTransactionTreeDataProvider();
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.addPrivateKey', async () => {
-			const key = await vscode.window.showInputBox({
-				prompt: `Private key of new account`,
-				password: true
-			});
-			if(key) {
-				try {
-					const acc = STATE.web3.eth.accounts.privateKeyToAccount(key);
-					// Should have failed if invalid private key
-					let alias = await vscode.window.showInputBox({
-						prompt: `Alias to identify this account`,
-						value: `Address ${acc.address}`
-					});
-					if(!alias) {
-						alias = `Address ${acc.address}`;
-					}
-					await STATE.addAccount(alias, acc);
-					STATE.account = acc;
-					// refresh private keys tree
-					accountTreeDataProvider.refresh();
-				} catch(err) {
-					vscode.window.showErrorMessage(`Error: ${err.message}`);
-				}
-			}
-		})
-	);
+  const pendingTransactionTreeView = vscode.window.createTreeView(
+    "eth-abi-interactive.pendingTxn",
+    {
+      treeDataProvider: pendingTransactionDataProvider,
+    }
+  );
+  pendingTransactionTreeView.message =
+    "Select a contract and its pending transaction will appear here.";
+  context.subscriptions.push(pendingTransactionTreeView);
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.refreshEntry', () =>
-			contractTreeDataProvider.refresh()
-		)
-	);
-	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.refreshAccounts', () =>
-			accountTreeDataProvider.refresh()
-		)
-	);
-	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.useContract', async (node: Contract) => {
-			const address = await vscode.window.showInputBox({
-				prompt: `Deployed contract address`
-			});
-			if (!address) {
-				return;
-			}
-			STATE.currentContract = node.label;
-			STATE.contractAddress = address;
-			abiTreeDataProvider.refresh();
-			abiTreeView.description = `${node.label} @ ${address}`;
-			abiTreeView.message = undefined;
-		})
-	);
-	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.useAccount', async (node: Account) => {
-			const password = await vscode.window.showInputBox({
-                prompt: `Password to decrypt ${node.key.alias}`,
-                password: true
-			});
-			if(password) {
-				STATE.account = STATE.web3.eth.accounts.decrypt(node.key.account, password);
-				accountTreeView.description = `Using ${node.key.alias}`;
-			}
-		})
-	);
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "eth-abi-interactive.setEndpoint",
+      async () => {
+        vscode.window.showInformationMessage(
+          api.status || "No ethcode extension found"
+        );
+        const value = await vscode.window.showInputBox({
+          prompt: `Ethereun node endpoint URI`,
+          value: STATE.endpoint,
+        });
+        if (value) {
+          STATE.endpoint = value;
+        }
+      }
+    )
+  );
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.editInput', async (input: Abi) => {
-			const value = await vscode.window.showInputBox({
-				prompt: `${input.abi.name}: ${input.abi.type}`
-			});
-			input.value = value;
-			input.description = `${input.abi.type}: ${value}`;
-			abiTreeDataProvider.refresh(input);
-		})
-	);
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "eth-abi-interactive.useContract",
+      async (node: Contract) => {
+        const isFilePresent = await getSourceName(node.label);
+        if (isFilePresent === false) {
+          await api.contract.selectContract(node.label);
+        }
+        const address = await api.contract.getContractAddress(node.label);
+        STATE.currentContract = node.label;
+        STATE.contractAddress = address;
+        abiTreeDataProvider.refresh();
+        abiTreeView.description = `${node.label} @ ${address}`;
+        abiTreeView.message = undefined;
+        pendingTransactionDataProvider.refresh();
+        pendingTransactionTreeView.description = `${node.label} @ ${address}`;
+        pendingTransactionTreeView.message = undefined;
+        STATE.flag = true;
+      }
+    )
+  );
 
-	const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
-	context.subscriptions.push(channel);
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "eth-abi-interactive.refreshContracts",
+      async (node: Contract) => {
+        contractTreeView = vscode.window.createTreeView(
+          "eth-abi-interactive.contracts",
+          {
+            treeDataProvider: contractTreeDataProvider,
+          }
+        );
+      }
+    )
+  );
 
-	function getParams(func: Abi) {
-		const params = [];
-		const paramsDesc = [];
-		for (const input of func.children) {
-			paramsDesc.push(`${input.abi.type} ${input.abi.name} = ${input.value}`);
-			if(input.abi.type === "bool") {
-				params.push(JSON.parse(input.value));
-			} else {
-				params.push(input.value);
-			}
-		}
-		return { params, paramsDesc };
-	}
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "eth-abi-interactive.refreshTreeView",
+      () => {
+        pendingTransactionDataProvider.refresh();
+        alchemy.ws.removeAllListeners();
+      }
+    )
+  );
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
-			const { params, paramsDesc } = getParams(func);
-			channel.appendLine("####################################################################################");
-			channel.appendLine(`Sending transaction ${func.abi.name}(${paramsDesc.join(", ")}) ...`);
-			channel.show(true);
-			try {
-				const receipt = await sendTransaction(func.abi.name, ...params);
-				printResponse(channel, receipt);
-			} catch (error) {
-				channel.appendLine(`ERROR ${error.message}`);
-			}
-		})
-	);
+  // alchemy.ws.on(
+  // 	{
+  // 		method: AlchemySubscription.PENDING_TRANSACTIONS,
+  // 		// toAddress: "0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b",
+  // 		toAddress: STATE.contractAddress,
+  // 	},
+  // 	(tx) => {
+  // 		if (STATE.flag) {
+  // 			console.log(tx);
+  // 			let obj = {
+  // 				label: tx.hash,
+  // 				collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 				children: [
+  // 					{
+  // 						label: `from`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.from,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `gas`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.gas,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `gasPrice`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.gasPrice,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `maxFeePerGas`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.maxFeePerGas,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `maxPriorityFeePerGas`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.maxPriorityFeePerGas,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `hash`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.hash,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `input`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.input,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `nonce`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.nonce,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `to`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.to,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `value`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.value,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `type`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.type,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `v`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.v,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `r`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.r,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 					{
+  // 						label: `s`,
+  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+  // 						children: [
+  // 							{
+  // 								label: tx.s,
+  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
+  // 							}
+  // 						]
+  // 					},
+  // 				]
+  // 			};
+  // 			console.log(obj);
+  // 			myEmitter.emit('newPendingTransaction', obj);
+  // 		}
+  // 	}
+  // );
+  // myEmitter.on('newPendingTransaction', (arg) => {
+  // 	pendingTransactionDataProvider.loadData(arg);
+  // });
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.callMethod', async (func: Abi) => {
-			const { params, paramsDesc } = getParams(func);
-			channel.appendLine("####################################################################################");
-			channel.appendLine(`Calling method ${func.abi.name}(${paramsDesc.join(", ")}) ...`);
-			channel.show(true);
-			try {
-				const result = await callMethod(func.abi.name, ...params);
-				printResponse(channel, result);
-			} catch (error) {
-				channel.appendLine(`ERROR ${error.message}`);
-			}
-		})
-	);
-
+  const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
+  context.subscriptions.push(channel);
 }
 
 export function deactivate() {}

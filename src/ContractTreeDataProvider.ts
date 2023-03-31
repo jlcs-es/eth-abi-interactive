@@ -1,9 +1,11 @@
-import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-import { STATE } from './state';
+import * as vscode from "vscode";
 
-export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contract> {
+let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
+const api: any = ethcodeExtension.exports;
+
+export class ContractTreeDataProvider
+  implements vscode.TreeDataProvider<Contract>
+{
   constructor(private workspaceRoot: string | undefined) {}
 
   getTreeItem(element: Contract): vscode.TreeItem {
@@ -11,28 +13,23 @@ export class ContractTreeDataProvider implements vscode.TreeDataProvider<Contrac
   }
 
   async getChildren(element?: Contract): Promise<Contract[]> {
-    if (!this.workspaceRoot) {
-      vscode.window.showInformationMessage('No Contracts in empty workspace');
+    let contracts: string[] = await api.contract.list();
+    if (contracts.length === 0) {
+      vscode.window.showInformationMessage("No Contracts in empty workspace");
       return [];
-    }
-
-    if (!element) {
-      const dir = path.join(this.workspaceRoot, STATE.contractsPath);
-      if (fs.existsSync(dir)) {
-        const files = await fs.promises.readdir(dir);
-        const leaves = [];
-        for (const file of files) {
-          leaves.push(new Contract(file, vscode.TreeItemCollapsibleState.None));
-        }
-        return leaves;
+    } else {
+      const leaves = [];
+      for (const file of contracts) {
+        leaves.push(new Contract(file, vscode.TreeItemCollapsibleState.None));
       }
+      return leaves;
     }
-
-    return [];
   }
 
-  private _onDidChangeTreeData: vscode.EventEmitter<Contract | undefined> = new vscode.EventEmitter<Contract | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<Contract | undefined> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<Contract | undefined> =
+    new vscode.EventEmitter<Contract | undefined>();
+  readonly onDidChangeTreeData: vscode.Event<Contract | undefined> =
+    this._onDidChangeTreeData.event;
 
   refresh(): void {
     this._onDidChangeTreeData.fire(undefined);
@@ -45,13 +42,13 @@ export class Contract extends vscode.TreeItem {
     public readonly collapsibleState: vscode.TreeItemCollapsibleState
   ) {
     super(label, collapsibleState);
-    this.contextValue = 'contract';
+    this.contextValue = "contract";
   }
 
   command = {
     title: "Use Contract",
     command: "eth-abi-interactive.useContract",
-    arguments: [this]
+    arguments: [this],
   };
 
   iconPath = new vscode.ThemeIcon("file-code");

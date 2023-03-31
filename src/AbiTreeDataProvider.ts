@@ -1,34 +1,29 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
+import { Command, extensions, TreeDataProvider, TreeItem, TreeItemCollapsibleState, EventEmitter, Event, ThemeIcon } from 'vscode';
+import { myEmitter } from './NodeDependenciesProvider';
 import { STATE } from './state';
-import { loadContract, readABI, reconnect } from './eth';
 
 
-export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
+let ethcodeExtension: any = extensions.getExtension('7finney.ethcode');
+const api: any = ethcodeExtension.exports;
+
+
+export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
   constructor(private workspaceRoot: string | undefined) {}
 
-  getTreeItem(element: Abi): vscode.TreeItem {
+  getTreeItem(element: Abi): TreeItem {
     return element;
   }
 
   async getChildren(element?: Abi): Promise<Abi[]> {
-    if (!STATE.currentContract) {
-      return [];
-    }
-
     const leaves = [];
 
-    // Root tree element
     if (!element) {
-      // Read the ABI and filter functions
-      const abi = await readABI(path.join(this.workspaceRoot || ".", 'build/contracts', STATE.currentContract));
-      reconnect();
-      loadContract(abi);
+      const abi = await api.contract.abi(STATE.currentContract);
       for (const entry of abi) {
         if (entry.type === "function") {
           const coll = (entry.inputs && entry.inputs.length)
-            ? vscode.TreeItemCollapsibleState.Expanded
-            : vscode.TreeItemCollapsibleState.None;
+            ? TreeItemCollapsibleState.Expanded
+            : TreeItemCollapsibleState.None;
           leaves.push(
             new Abi(
               entry.name,
@@ -51,7 +46,7 @@ export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
             "abiInput",
             element,
             [],
-            vscode.TreeItemCollapsibleState.None
+            TreeItemCollapsibleState.None
           )
         );
       }
@@ -61,15 +56,15 @@ export class AbiTreeDataProvider implements vscode.TreeDataProvider<Abi> {
     return leaves;
   }
 
-  private _onDidChangeTreeData: vscode.EventEmitter<Abi | undefined> = new vscode.EventEmitter<Abi | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<Abi | undefined> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: EventEmitter<Abi | undefined> = new EventEmitter<Abi | undefined>();
+  readonly onDidChangeTreeData: Event<Abi | undefined> = this._onDidChangeTreeData.event;
 
   refresh(item?: Abi): void {
     this._onDidChangeTreeData.fire(item);
   }
 }
 
-export class Abi extends vscode.TreeItem {
+export class Abi extends TreeItem {
   public value: any;
   constructor(
     public readonly label: string,
@@ -77,15 +72,19 @@ export class Abi extends vscode.TreeItem {
     contextValue: string,
     public parent: Abi | null,
     public children: Abi[],
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState
+    public readonly collapsibleState: TreeItemCollapsibleState
   ) {
     super(label, collapsibleState);
     this.contextValue = contextValue;
     if(abi.type === "function") {
-      this.iconPath = new vscode.ThemeIcon("symbol-method");
+      this.iconPath = new ThemeIcon("symbol-method");
+      this.command = {
+        title: "Call function",
+        command: "ethcode.contract.call",
+      };
     } else {
       this.description = abi.type;
-      this.iconPath = new vscode.ThemeIcon("symbol-parameter");
+      this.iconPath = new ThemeIcon("symbol-parameter");
     }
   }
 }
