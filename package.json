@@ -63,6 +63,16 @@
         "command": "eth-abi-interactive.refreshTreeView",
         "title": "Stop",
         "icon": "$(debug-pause)"
+      },
+      {
+				"command": "eth-abi-interactive.editInput",
+				"title": "Edit input value",
+				"icon": "$(edit)"
+			},
+      {
+				"command": "eth-abi-interactive.sendTransaction",
+				"title": "Send transaction",
+				"icon": "$(play)"
       }
     ],
     "menus": {
@@ -78,7 +88,23 @@
           "group": "navigation"
         }
       ],
-      "view/item/context": []
+      "view/item/context": [
+        {
+					"command": "eth-abi-interactive.editInput",
+					"when": "view == eth-abi-interactive.abis && viewItem == abiInput",
+					"group": "inline"
+				},
+				{
+					"command": "eth-abi-interactive.sendTransaction",
+					"when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
+					"group": "inline"
+				},
+				{
+					"command": "eth-abi-interactive.callMethod",
+					"when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
+					"group": "inline"
+				}
+      ]
     }
   },
   "scripts": {

@@ -16,9 +16,10 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
 
   async getChildren(element?: Abi): Promise<Abi[]> {
     const leaves = [];
-
+    let inputsEthcode: any = await api.contract.getFunctionInput(STATE.currentContract);
     if (!element) {
       const abi = await api.contract.abi(STATE.currentContract);
+      
       for (const entry of abi) {
         if (entry.type === "function") {
           const coll = (entry.inputs && entry.inputs.length)
@@ -37,8 +38,10 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
         }
       }
     } else if (element.abi.type === "function") {
-      // Given the parent, get the function params
-      for (const input of element.abi.inputs) {
+
+      const value = inputsEthcode.find((i: any) => i.name === element.abi.name);
+      console.log(value);
+      for (const input of value.inputs) {
         leaves.push(
           new Abi(
             input.name,
@@ -50,6 +53,8 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
           )
         );
       }
+
+
       element.children = leaves;
     }
 
@@ -83,7 +88,7 @@ export class Abi extends TreeItem {
         command: "ethcode.contract.call",
       };
     } else {
-      this.description = abi.type;
+      this.description = abi.type+" "+abi.value;
       this.iconPath = new ThemeIcon("symbol-parameter");
     }
   }

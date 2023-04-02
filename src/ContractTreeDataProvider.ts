@@ -37,6 +37,7 @@ export class ContractTreeDataProvider
 }
 
 export class Contract extends vscode.TreeItem {
+  contextValue: string;
   constructor(
     public readonly label: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState

@@ -19,7 +19,7 @@ const alchemy = new Alchemy(settings);
 let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   const path_ = vscode.workspace.workspaceFolders;
   if (path_ === undefined) {
     vscode.window.showErrorMessage("No folder selected please open one.");
@@ -54,6 +54,42 @@ export function activate(context: vscode.ExtensionContext) {
   abiTreeView.message =
     "Select a contract and its ABI functions will appear here.";
   context.subscriptions.push(abiTreeView);
+	
+  context.subscriptions.push(
+		vscode.commands.registerCommand('eth-abi-interactive.editInput', async (input: Abi) => {
+      // get path of the file
+      let filePath = "";
+      let path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_functions_input.json`);
+      filePath = path[0].fsPath;
+      console.log(filePath);
+			const value = await vscode.window.showInputBox({
+				prompt: `${input.abi.name}: ${input.abi.type}`
+			});
+      if(!value) {return;}
+			input.value = value;
+			input.description = `${input.abi.type}: ${value}`;
+      let data  = fs.readFileSync(filePath);
+      let json = JSON.parse(data.toString());
+      json.find((item: any) => item.name === input.parent?.abi.name).inputs.find((item: any) => item.name === input.abi.name).value = value;
+      let newData = JSON.stringify(json, null, 2);
+      fs.writeFileSync(filePath, newData);
+      abiTreeDataProvider.refresh(input);
+		})
+	);
+  
+  fs.watch(path_[0].uri.fsPath,{ recursive: true }, (eventType, filename) => {
+    console.log(`File ${filename} has been ${eventType}`);
+    abiTreeDataProvider.refresh();
+  });
+
+  context.subscriptions.push(
+		vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
+			channel.appendLine("####################################################################################");
+			channel.appendLine(`Sending transaction ${func.abi.name} ...`);
+      console.log(func);
+			channel.show(true);
+		})
+	);
 
   const pendingTransactionDataProvider =
     new PendingTransactionTreeDataProvider();
