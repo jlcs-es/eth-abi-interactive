@@ -8,6 +8,7 @@ import { PendingTransactionTreeDataProvider } from "./NodeDependenciesProvider";
 import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
 import { myEmitter } from "./NodeDependenciesProvider";
 import { getSourceName } from "./utils/functions";
+import ethers from "ethers";
 
 const settings = {
   apiKey: "2BfT7PmhS5UzBkXbguSIXm5Nk3myk0ey",
@@ -87,6 +88,36 @@ export async function activate(context: vscode.ExtensionContext) {
 			channel.appendLine("####################################################################################");
 			channel.appendLine(`Sending transaction ${func.abi.name} ...`);
       console.log(func);
+
+      let wallet:any = await api.wallet.get();
+      channel.appendLine(`Wallet : ${wallet.address}`);
+			
+      let abi = await api.contract.abi(STATE.currentContract);
+      console.log(abi);
+			
+      let contractAddress = await api.contract.getContractAddress(STATE.currentContract);
+      console.log(contractAddress);
+      
+      // execute the selected function
+      let functionArgs: any = [];
+      func.children.forEach((item: Abi) => {
+        functionArgs.push(item.abi.value);
+      });
+      console.log(functionArgs);
+
+      //////////////////////////////////////////////////////////////////////////////////
+      // create a contract instance
+      let contract = new ethers.Contract(contractAddress, abi, wallet);
+      // let result = await contract.name();
+      let result = await contract[func.abi.name](...functionArgs);
+      console.log(result);
+      channel.appendLine(`Transaction hash : ${result.hash}`);
+      result.wait().then((receipt: any) => {
+        channel.appendLine(`Transaction receipt : ${JSON.stringify(receipt)}`);
+      });
+      console.log(result);
+      ///////////////////////////////////////////////////////////////////////////////////
+      channel.appendLine("####################################################################################");
 			channel.show(true);
 		})
 	);

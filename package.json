@@ -65,14 +65,14 @@
         "icon": "$(debug-pause)"
       },
       {
-				"command": "eth-abi-interactive.editInput",
-				"title": "Edit input value",
-				"icon": "$(edit)"
-			},
+        "command": "eth-abi-interactive.editInput",
+        "title": "Edit input value",
+        "icon": "$(edit)"
+      },
       {
-				"command": "eth-abi-interactive.sendTransaction",
-				"title": "Send transaction",
-				"icon": "$(play)"
+        "command": "eth-abi-interactive.sendTransaction",
+        "title": "Send transaction",
+        "icon": "$(play)"
       }
     ],
     "menus": {
@@ -90,20 +90,15 @@
       ],
       "view/item/context": [
         {
-					"command": "eth-abi-interactive.editInput",
-					"when": "view == eth-abi-interactive.abis && viewItem == abiInput",
-					"group": "inline"
-				},
-				{
-					"command": "eth-abi-interactive.sendTransaction",
-					"when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
-					"group": "inline"
-				},
-				{
-					"command": "eth-abi-interactive.callMethod",
-					"when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
-					"group": "inline"
-				}
+          "command": "eth-abi-interactive.editInput",
+          "when": "view == eth-abi-interactive.abis && viewItem == abiInput",
+          "group": "inline"
+        },
+        {
+          "command": "eth-abi-interactive.sendTransaction",
+          "when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
+          "group": "inline"
+        }
       ]
     }
   },
@@ -132,6 +127,7 @@
   "dependencies": {
     "alchemy-sdk": "^2.6.1",
     "bnc-sdk": "^4.6.7",
+    "ethers": "5.4.0",
     "web3": "^1.3.0",
     "ws": "^8.12.1"
   }

@@ -83,10 +83,6 @@ export class Abi extends TreeItem {
     this.contextValue = contextValue;
     if(abi.type === "function") {
       this.iconPath = new ThemeIcon("symbol-method");
-      this.command = {
-        title: "Call function",
-        command: "ethcode.contract.call",
-      };
     } else {
       this.description = abi.type+" "+abi.value;
       this.iconPath = new ThemeIcon("symbol-parameter");
