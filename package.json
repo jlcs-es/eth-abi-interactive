@@ -2,14 +2,14 @@
   "name": "eth-abi-interactive",
   "displayName": "Eth ABI Interactive",
   "publisher": "7finney",
-  "description": "Interact with deployed Ethereum smart contracts using the ABI",
-  "license": "SEE LICENSE IN LICENSE.txt",
+  "description": "Smart Contracts ABI Interactive Interface",
+  "license": "MIT",
   "icon": "media/eth.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/7finney/eth-abi-interactive"
   },
-  "version": "0.0.2",
+  "version": "0.0.1",
   "engines": {
     "vscode": "^1.77.0"
   },
