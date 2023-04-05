@@ -21,7 +21,7 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
       const abi = await api.contract.abi(STATE.currentContract);
       
       for (const entry of abi) {
-        if (entry.type === "function") {
+        if (entry.type === "function" ) {
           const coll = (entry.inputs && entry.inputs.length)
             ? TreeItemCollapsibleState.Expanded
             : TreeItemCollapsibleState.None;

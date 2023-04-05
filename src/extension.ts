@@ -63,17 +63,29 @@ export async function activate(context: vscode.ExtensionContext) {
       let path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_functions_input.json`);
       filePath = path[0].fsPath;
       console.log(filePath);
-			const value = await vscode.window.showInputBox({
-				prompt: `${input.abi.name}: ${input.abi.type}`
-			});
-      if(!value) {return;}
-			input.value = value;
-			input.description = `${input.abi.type}: ${value}`;
-      let data  = fs.readFileSync(filePath);
-      let json = JSON.parse(data.toString());
-      json.find((item: any) => item.name === input.parent?.abi.name).inputs.find((item: any) => item.name === input.abi.name).value = value;
-      let newData = JSON.stringify(json, null, 2);
-      fs.writeFileSync(filePath, newData);
+      
+      const document = await vscode.workspace.openTextDocument(filePath);
+
+      async function search(filePath: string, searchString: string, startLine: number = 0) {
+        const document = await vscode.workspace.openTextDocument(filePath);
+        const text = document.getText();
+        const start = text.indexOf(searchString, document.offsetAt(new vscode.Position(startLine, 0)));
+        const startPosition = document.positionAt(start);
+        return startPosition;
+      }
+      
+      console.log(input);
+      
+      let lineNumber = await search(filePath, `"name": "${input.parent?.label}"`);
+      console.log(lineNumber , `"name": "${input.parent?.label}"`);
+      let line = await search(filePath, `"name": "${input.abi.name}"`, lineNumber.line);
+      console.log(line, `"name": "${input.abi.name}"`);
+
+      const cursorPosition = new vscode.Position(line.line + 2, line.character + 10);
+      const editor = await vscode.window.showTextDocument(document);
+      editor.selection = new vscode.Selection(cursorPosition, cursorPosition);
+      editor.revealRange(new vscode.Range(cursorPosition, cursorPosition));
+
       abiTreeDataProvider.refresh(input);
 		})
 	);
