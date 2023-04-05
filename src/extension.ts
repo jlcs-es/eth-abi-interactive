@@ -1,12 +1,10 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
-import path from "path";
 import { ContractTreeDataProvider, Contract } from "./ContractTreeDataProvider";
 import { AbiTreeDataProvider, Abi } from "./AbiTreeDataProvider";
 import { STATE } from "./state";
 import { PendingTransactionTreeDataProvider } from "./NodeDependenciesProvider";
 import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
-import { myEmitter } from "./NodeDependenciesProvider";
 import { getSourceName } from "./utils/functions";
 import ethers from "ethers";
 
@@ -134,24 +132,6 @@ export async function activate(context: vscode.ExtensionContext) {
   pendingTransactionTreeView.message =
     "Select a contract and its pending transaction will appear here.";
   context.subscriptions.push(pendingTransactionTreeView);
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "eth-abi-interactive.setEndpoint",
-      async () => {
-        vscode.window.showInformationMessage(
-          api.status || "No ethcode extension found"
-        );
-        const value = await vscode.window.showInputBox({
-          prompt: `Ethereun node endpoint URI`,
-          value: STATE.endpoint,
-        });
-        if (value) {
-          STATE.endpoint = value;
-        }
-      }
-    )
-  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
