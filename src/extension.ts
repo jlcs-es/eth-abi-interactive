@@ -114,19 +114,21 @@ export async function activate(context: vscode.ExtensionContext) {
         functionArgs.push(item.abi.value);
       });
       console.log(functionArgs);
-
-      //////////////////////////////////////////////////////////////////////////////////
-      // create a contract instance
-      let contract = new ethers.Contract(contractAddress, abi, wallet);
-      // let result = await contract.name();
-      let result = await contract[func.abi.name](...functionArgs);
-      console.log(result);
-      channel.appendLine(`Transaction hash : ${result.hash}`);
-      result.wait().then((receipt: any) => {
-        channel.appendLine(`Transaction receipt : ${JSON.stringify(receipt)}`);
+      async function executeTransaction(contractAddress: string, abi: any[], wallet: ethers.Wallet, functionName: string, args: any[]) {
+        const contract = new ethers.Contract(contractAddress, abi, wallet);
+        const tx = await contract[functionName](...args);
+        const txResponse = await tx.wait();
+        return txResponse;
+      }
+      
+      
+      executeTransaction(contractAddress, abi, wallet, func.abi.name, functionArgs).then((txResponse: any) => {
+        console.log(txResponse);
+        channel.appendLine(`Transaction hash : ${txResponse.transactionHash}`);
+      }).catch((err: any) => {
+        console.log(err);
+        channel.appendLine(`Error : ${err}`);
       });
-      console.log(result);
-      ///////////////////////////////////////////////////////////////////////////////////
       channel.appendLine("####################################################################################");
 			channel.show(true);
 		})
@@ -187,6 +189,15 @@ export async function activate(context: vscode.ExtensionContext) {
       () => {
         pendingTransactionDataProvider.refresh();
         alchemy.ws.removeAllListeners();
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "eth-abi-interactive.deployContract",
+      async (input : any) => {
+        console.log(input);
       }
     )
   );
