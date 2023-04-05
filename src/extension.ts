@@ -4,16 +4,16 @@ import { ContractTreeDataProvider, Contract } from "./ContractTreeDataProvider";
 import { AbiTreeDataProvider, Abi } from "./AbiTreeDataProvider";
 import { STATE } from "./state";
 import { PendingTransactionTreeDataProvider } from "./NodeDependenciesProvider";
-import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+// import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
 import { getSourceName } from "./utils/functions";
 import ethers from "ethers";
 
-const settings = {
-  apiKey: "2BfT7PmhS5UzBkXbguSIXm5Nk3myk0ey",
-  network: Network.ETH_MAINNET,
-};
+// const settings = {
+//   apiKey: "2BfT7PmhS5UzBkXbguSIXm5Nk3myk0ey",
+//   network: Network.ETH_MAINNET,
+// };
 
-const alchemy = new Alchemy(settings);
+// const alchemy = new Alchemy(settings);
 
 let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
@@ -188,7 +188,7 @@ export async function activate(context: vscode.ExtensionContext) {
       "eth-abi-interactive.refreshTreeView",
       () => {
         pendingTransactionDataProvider.refresh();
-        alchemy.ws.removeAllListeners();
+        // alchemy.ws.removeAllListeners();
       }
     )
   );

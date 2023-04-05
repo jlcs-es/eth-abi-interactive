@@ -132,7 +132,6 @@
     "vscode-test": "^1.4.0"
   },
   "dependencies": {
-    "alchemy-sdk": "^2.6.1",
     "bnc-sdk": "^4.6.7",
     "ethers": "5.4.0",
     "ws": "^8.12.1"
