@@ -72,6 +72,11 @@
         "icon": "$(play)"
       },
       {
+        "command": "eth-abi-interactive.callContract",
+        "title": "Call contract",
+        "icon": "$(play)"
+      },
+      {
         "command": "eth-abi-interactive.deployContract",
         "title": "Deploy contract",
         "icon": "$(play)"
@@ -104,6 +109,11 @@
         {
           "command": "eth-abi-interactive.sendTransaction",
           "when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
+          "group": "inline"
+        },
+        {
+          "command": "eth-abi-interactive.callContract",
+          "when": "view == eth-abi-interactive.abis && viewItem == abiReadFunction",
           "group": "inline"
         }
       ]

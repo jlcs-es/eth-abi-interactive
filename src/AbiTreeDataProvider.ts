@@ -3,6 +3,27 @@ import { myEmitter } from './NodeDependenciesProvider';
 import { STATE } from './state';
 
 
+export class Abi extends TreeItem {
+  public value: any;
+  constructor(
+    public readonly label: string,
+    public readonly abi: any,
+    contextValue: string,
+    public parent: Abi | null,
+    public children: Abi[],
+    public readonly collapsibleState: TreeItemCollapsibleState
+  ) {
+    super(label, collapsibleState);
+    this.contextValue = contextValue;
+    if(abi.type === "function") {
+      this.iconPath = new ThemeIcon("symbol-method");
+    } else {
+      this.description = abi.type + " " + abi.value;
+      this.iconPath = new ThemeIcon("symbol-parameter");
+    }
+  }
+}
+
 let ethcodeExtension: any = extensions.getExtension('7finney.ethcode');
 const api: any = ethcodeExtension.exports;
 
@@ -21,6 +42,8 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
       const abi = await api.contract.abi(STATE.currentContract);
       
       for (const entry of abi) {
+        console.log('============== entry types ==============');
+        console.log(entry.type);
         if (entry.type === "function" ) {
           const coll = (entry.inputs && entry.inputs.length)
             ? TreeItemCollapsibleState.Expanded
@@ -29,7 +52,7 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
             new Abi(
               entry.name,
               entry,
-              "abiFunction",
+              entry.stateMutability === "view" ? "abiReadFunction" : "abiFunction",
               null,
               [],
               coll
@@ -38,7 +61,6 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
         }
       }
     } else if (element.abi.type === "function") {
-
       const value = inputsEthcode.find((i: any) => i.name === element.abi.name);
       console.log(value);
       for (const input of value.inputs) {
@@ -53,11 +75,8 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
           )
         );
       }
-
-
       element.children = leaves;
     }
-
     return leaves;
   }
 
@@ -66,26 +85,5 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
 
   refresh(item?: Abi): void {
     this._onDidChangeTreeData.fire(item);
-  }
-}
-
-export class Abi extends TreeItem {
-  public value: any;
-  constructor(
-    public readonly label: string,
-    public readonly abi: any,
-    contextValue: string,
-    public parent: Abi | null,
-    public children: Abi[],
-    public readonly collapsibleState: TreeItemCollapsibleState
-  ) {
-    super(label, collapsibleState);
-    this.contextValue = contextValue;
-    if(abi.type === "function") {
-      this.iconPath = new ThemeIcon("symbol-method");
-    } else {
-      this.description = abi.type+" "+abi.value;
-      this.iconPath = new ThemeIcon("symbol-parameter");
-    }
   }
 }

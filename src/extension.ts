@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
-import { ContractTreeDataProvider, Contract } from "./ContractTreeDataProvider";
+import { ContractTreeDataProvider, Contract as ContractTreeItem } from "./ContractTreeDataProvider";
 import { AbiTreeDataProvider, Abi } from "./AbiTreeDataProvider";
 import { STATE } from "./state";
 import { PendingTransactionTreeDataProvider } from "./NodeDependenciesProvider";
 // import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
 import { getSourceName } from "./utils/functions";
-import ethers from "ethers";
+import { Contract, Wallet } from "ethers";
 
 // const settings = {
 //   apiKey: "2BfT7PmhS5UzBkXbguSIXm5Nk3myk0ey",
@@ -93,6 +93,28 @@ export async function activate(context: vscode.ExtensionContext) {
     abiTreeDataProvider.refresh();
   });
 
+  async function executeTransaction(contractAddress: string, abi: any[], wallet: Wallet, functionName: string, args: any[]) {
+    console.log('.................executeTransaction.................');
+    const contract = new Contract(contractAddress, abi, wallet);
+    console.log(contract);
+    const tx = await contract[functionName](...args);
+    console.log(tx);
+    const txResponse = await tx.wait();
+    return txResponse;
+  }
+
+  async function callContract(contractAddress: string, abi: any[], functionName: string, args: any[]) {
+    console.log('.................callContract.................');
+    const ethcodeProvider = await api.provider.get();
+    console.log(contractAddress);
+    const contract = new Contract(contractAddress, abi, ethcodeProvider);
+    console.log(contract);
+    console.log(functionName);
+    console.log(args);
+    const result = await contract[functionName](...args);
+    return result;
+  }
+
   context.subscriptions.push(
 		vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
 			channel.appendLine("####################################################################################");
@@ -114,12 +136,6 @@ export async function activate(context: vscode.ExtensionContext) {
         functionArgs.push(item.abi.value);
       });
       console.log(functionArgs);
-      async function executeTransaction(contractAddress: string, abi: any[], wallet: ethers.Wallet, functionName: string, args: any[]) {
-        const contract = new ethers.Contract(contractAddress, abi, wallet);
-        const tx = await contract[functionName](...args);
-        const txResponse = await tx.wait();
-        return txResponse;
-      }
       
       
       executeTransaction(contractAddress, abi, wallet, func.abi.name, functionArgs).then((txResponse: any) => {
@@ -133,6 +149,26 @@ export async function activate(context: vscode.ExtensionContext) {
 			channel.show(true);
 		})
 	);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('eth-abi-interactive.callContract', async (func: Abi) => {
+      console.log("~~~~~~~~~~~~~~ Will call read function ~~~~~~~~~~~~~~");
+      const abi = await api.contract.abi(STATE.currentContract);
+      const contractAddress = await api.contract.getContractAddress(STATE.currentContract);
+      const functionArgs: any = [];
+      func.children.forEach((item: Abi) => {
+        functionArgs.push(item.abi.value);
+      });
+      callContract(contractAddress, abi, func.abi.name, functionArgs).then((response: any) => {
+        channel.appendLine(`Contract call result : ${response}`);
+      }).catch((err: any) => {
+        console.error(err);
+        channel.appendLine(`Error : ${err}`);
+      });
+      channel.appendLine("####################################################################################");
+			channel.show(true);
+    })
+  );
 
   const pendingTransactionDataProvider =
     new PendingTransactionTreeDataProvider();
@@ -150,7 +186,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "eth-abi-interactive.useContract",
-      async (node: Contract) => {
+      async (node: ContractTreeItem) => {
         const isFilePresent = await getSourceName(node.label);
         if (isFilePresent === false) {
           await api.contract.selectContract(node.label);
@@ -172,7 +208,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "eth-abi-interactive.refreshContracts",
-      async (node: Contract) => {
+      async (node: ContractTreeItem) => {
         contractTreeView = vscode.window.createTreeView(
           "eth-abi-interactive.contracts",
           {
