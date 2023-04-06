@@ -92,7 +92,7 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
     });
     channel.appendLine("####################################################################################");
     channel.show(true);
-}
+};
 
 const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
     console.log("~~~~~~~~~~~~~~ Will call read function ~~~~~~~~~~~~~~");
@@ -110,7 +110,7 @@ const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
     });
     channel.appendLine("####################################################################################");
     channel.show(true);
-}
+};
 
 export {
     editInput,

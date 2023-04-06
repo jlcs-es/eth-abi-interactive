@@ -40,6 +40,11 @@
           "name": "Contracts"
         },
         {
+          "id": "eth-abi-interactive.constructor",
+          "name": "Constructor",
+          "visibility": "collapsed"
+        },
+        {
           "id": "eth-abi-interactive.abis",
           "name": "ABI",
           "visibility": "collapsed"
@@ -63,6 +68,11 @@
       },
       {
         "command": "eth-abi-interactive.editInput",
+        "title": "Edit input value",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "eth-abi-interactive.editConstructorInput",
         "title": "Edit input value",
         "icon": "$(edit)"
       },
@@ -99,6 +109,11 @@
         {
           "command": "eth-abi-interactive.editInput",
           "when": "view == eth-abi-interactive.abis && viewItem == abiInput",
+          "group": "inline"
+        },
+        {
+          "command": "eth-abi-interactive.editConstructorInput",
+          "when": "view == eth-abi-interactive.constructor && viewItem == constructor",
           "group": "inline"
         },
         {

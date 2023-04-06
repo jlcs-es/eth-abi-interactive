@@ -13,7 +13,9 @@ const useContract = async (
     abiTreeDataProvider: any,
     abiTreeView: any,
     pendingTransactionDataProvider: any,
-    pendingTransactionTreeView: any
+    pendingTransactionTreeView: any,
+    constructorTreeDataProvider: any, 
+    constructorTreeView: any
 ) => {
     const isFilePresent = await getSourceName(node.label);
     if (isFilePresent === false) {
@@ -25,6 +27,10 @@ const useContract = async (
     abiTreeDataProvider.refresh();
     abiTreeView.description = `${node.label} @ ${address}`;
     abiTreeView.message = undefined;
+    constructorTreeDataProvider.refresh();
+    constructorTreeView.description = `${node.label} @ ${address}`;
+    // check if constructor tree viee has childern if not then show message
+    constructorTreeView.message = undefined;
     pendingTransactionDataProvider.refresh();
     pendingTransactionTreeView.description = `${node.label} @ ${address}`;
     pendingTransactionTreeView.message = undefined;

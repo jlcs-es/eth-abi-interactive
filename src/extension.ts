@@ -9,6 +9,8 @@ import { getSourceName } from "./utils/functions";
 import { Contract, Wallet } from "ethers";
 import { callContract, editInput, sendTransaction } from "./AbiTreeView/functions";
 import { refreshContract, useContract } from "./ContractTreeView/functions";
+import { ConstructorTreeDataProvider } from "./ConstructorTreeView/ConstructorTreeDataProvider";
+import { editConstructorInput } from "./ConstructorTreeView/functions";
 
 // const settings = {
 //   apiKey: "2BfT7PmhS5UzBkXbguSIXm5Nk3myk0ey",
@@ -40,9 +42,9 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   api.events.contracts.event(() => {
-    contractTreeView = vscode.window.createTreeView("eth-abi-interactive.contracts",{
-        treeDataProvider: contractTreeDataProvider,
-      });
+    contractTreeView = vscode.window.createTreeView("eth-abi-interactive.contracts", {
+      treeDataProvider: contractTreeDataProvider,
+    });
   });
 
   // Abi Tree View
@@ -55,10 +57,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
   abiTreeView.message = "Select a contract and its ABI functions will appear here.";
 
-  fs.watch(path_[0].uri.fsPath, { recursive: true }, (eventType, filename) => {
-    console.log(`File ${filename} has been ${eventType}`);
-    abiTreeDataProvider.refresh();
+  
+
+  // constructor tree view
+  const constructorTreeDataProvider = new ConstructorTreeDataProvider(
+    vscode.workspace.rootPath
+  );
+
+  const constructorTreeView = vscode.window.createTreeView("eth-abi-interactive.constructor", {
+    treeDataProvider: constructorTreeDataProvider,
   });
+
+  constructorTreeView.message = "Select a contract and its constructor will appear here.";
 
   // pending transaction tree view
   const pendingTransactionDataProvider = new PendingTransactionTreeDataProvider();
@@ -68,6 +78,13 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   pendingTransactionTreeView.message = "Select a contract and its pending transaction will appear here.";
+
+  fs.watch(path_[0].uri.fsPath, { recursive: true }, (eventType, filename) => {
+    console.log(`File ${filename} has been ${eventType}`);
+    abiTreeDataProvider.refresh();
+    contractTreeDataProvider.refresh();
+    constructorTreeDataProvider.refresh();
+  });
 
   // functions
   context.subscriptions.push(
@@ -82,15 +99,17 @@ export async function activate(context: vscode.ExtensionContext) {
       callContract(func, channel);
     }),
     // contract 
-    vscode.commands.registerCommand("eth-abi-interactive.useContract",
-      async (node: ContractTreeItem) => {
-        useContract(node, abiTreeDataProvider, abiTreeView, pendingTransactionDataProvider, pendingTransactionTreeView);
-      }
-    ),
+    vscode.commands.registerCommand("eth-abi-interactive.useContract", async (node: ContractTreeItem) => {
+      useContract(node, abiTreeDataProvider, abiTreeView, pendingTransactionDataProvider, pendingTransactionTreeView , constructorTreeDataProvider, constructorTreeView);
+    }),
     vscode.commands.registerCommand("eth-abi-interactive.refreshContracts", async (node: ContractTreeItem) => {
       contractTreeView = await refreshContract(node, contractTreeDataProvider);
-    }
-    )
+    }),
+    // constructor
+    vscode.commands.registerCommand("eth-abi-interactive.editConstructorInput", async (input: any) => {
+      console.log(input);
+      editConstructorInput(input, constructorTreeDataProvider);
+    }),
   );
 
   context.subscriptions.push(abiTreeView);
