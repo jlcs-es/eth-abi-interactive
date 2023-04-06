@@ -1,12 +1,14 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
-import { ContractTreeDataProvider, Contract as ContractTreeItem } from "./ContractTreeDataProvider";
-import { AbiTreeDataProvider, Abi } from "./AbiTreeDataProvider";
+import { ContractTreeDataProvider, Contract as ContractTreeItem } from "./ContractTreeView/ContractTreeDataProvider";
+import { AbiTreeDataProvider, Abi } from "./AbiTreeView/AbiTreeDataProvider";
 import { STATE } from "./state";
-import { PendingTransactionTreeDataProvider } from "./NodeDependenciesProvider";
+import { PendingTransactionTreeDataProvider } from "./PendingTransactionTreeView/NodeDependenciesProvider";
 // import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
 import { getSourceName } from "./utils/functions";
 import { Contract, Wallet } from "ethers";
+import { callContract, editInput, sendTransaction } from "./AbiTreeView/functions";
+import { refreshContract, useContract } from "./ContractTreeView/functions";
 
 // const settings = {
 //   apiKey: "2BfT7PmhS5UzBkXbguSIXm5Nk3myk0ey",
@@ -20,223 +22,101 @@ const api: any = ethcodeExtension.exports;
 
 export async function activate(context: vscode.ExtensionContext) {
   const path_ = vscode.workspace.workspaceFolders;
+
   if (path_ === undefined) {
     vscode.window.showErrorMessage("No folder selected please open one.");
     return;
   }
 
+  const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
+
+  // Contract Tree View
   const contractTreeDataProvider = new ContractTreeDataProvider(
     vscode.workspace.rootPath
   );
-  let contractTreeView = vscode.window.createTreeView(
-    "eth-abi-interactive.contracts",
-    {
-      treeDataProvider: contractTreeDataProvider,
-    }
-  );
-  api.events.contracts.event(() => {
-    contractTreeView = vscode.window.createTreeView(
-      "eth-abi-interactive.contracts",
-      {
-        treeDataProvider: contractTreeDataProvider,
-      }
-    );
-  });
-  context.subscriptions.push(contractTreeView as any);
 
+  let contractTreeView = vscode.window.createTreeView("eth-abi-interactive.contracts", {
+    treeDataProvider: contractTreeDataProvider,
+  });
+
+  api.events.contracts.event(() => {
+    contractTreeView = vscode.window.createTreeView("eth-abi-interactive.contracts",{
+        treeDataProvider: contractTreeDataProvider,
+      });
+  });
+
+  // Abi Tree View
   const abiTreeDataProvider = new AbiTreeDataProvider(
     vscode.workspace.rootPath
   );
   const abiTreeView = vscode.window.createTreeView("eth-abi-interactive.abis", {
     treeDataProvider: abiTreeDataProvider,
   });
-  abiTreeView.message =
-    "Select a contract and its ABI functions will appear here.";
-  context.subscriptions.push(abiTreeView);
-	
-  context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.editInput', async (input: Abi) => {
-      // get path of the file
-      let filePath = "";
-      let path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_functions_input.json`);
-      filePath = path[0].fsPath;
-      console.log(filePath);
-      
-      const document = await vscode.workspace.openTextDocument(filePath);
 
-      async function search(filePath: string, searchString: string, startLine: number = 0) {
-        const document = await vscode.workspace.openTextDocument(filePath);
-        const text = document.getText();
-        const start = text.indexOf(searchString, document.offsetAt(new vscode.Position(startLine, 0)));
-        const startPosition = document.positionAt(start);
-        return startPosition;
-      }
-      
-      console.log(input);
-      
-      let lineNumber = await search(filePath, `"name": "${input.parent?.label}"`);
-      console.log(lineNumber , `"name": "${input.parent?.label}"`);
-      let line = await search(filePath, `"name": "${input.abi.name}"`, lineNumber.line);
-      console.log(line, `"name": "${input.abi.name}"`);
+  abiTreeView.message = "Select a contract and its ABI functions will appear here.";
 
-      const cursorPosition = new vscode.Position(line.line + 2, line.character + 10);
-      const editor = await vscode.window.showTextDocument(document);
-      editor.selection = new vscode.Selection(cursorPosition, cursorPosition);
-      editor.revealRange(new vscode.Range(cursorPosition, cursorPosition));
-
-      abiTreeDataProvider.refresh(input);
-		})
-	);
-  
-  fs.watch(path_[0].uri.fsPath,{ recursive: true }, (eventType, filename) => {
+  fs.watch(path_[0].uri.fsPath, { recursive: true }, (eventType, filename) => {
     console.log(`File ${filename} has been ${eventType}`);
     abiTreeDataProvider.refresh();
   });
 
-  async function executeTransaction(contractAddress: string, abi: any[], wallet: Wallet, functionName: string, args: any[]) {
-    console.log('.................executeTransaction.................');
-    const contract = new Contract(contractAddress, abi, wallet);
-    console.log(contract);
-    const tx = await contract[functionName](...args);
-    console.log(tx);
-    const txResponse = await tx.wait();
-    return txResponse;
-  }
+  // pending transaction tree view
+  const pendingTransactionDataProvider = new PendingTransactionTreeDataProvider();
 
-  async function callContract(contractAddress: string, abi: any[], functionName: string, args: any[]) {
-    console.log('.................callContract.................');
-    const ethcodeProvider = await api.provider.get();
-    console.log(contractAddress);
-    const contract = new Contract(contractAddress, abi, ethcodeProvider);
-    console.log(contract);
-    console.log(functionName);
-    console.log(args);
-    const result = await contract[functionName](...args);
-    return result;
-  }
+  const pendingTransactionTreeView = vscode.window.createTreeView("eth-abi-interactive.pendingTxn", {
+    treeDataProvider: pendingTransactionDataProvider,
+  });
 
+  pendingTransactionTreeView.message = "Select a contract and its pending transaction will appear here.";
+
+  // functions
   context.subscriptions.push(
-		vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
-			channel.appendLine("####################################################################################");
-			channel.appendLine(`Sending transaction ${func.abi.name} ...`);
-      console.log(func);
-
-      let wallet:any = await api.wallet.get();
-      channel.appendLine(`Wallet : ${wallet.address}`);
-			
-      let abi = await api.contract.abi(STATE.currentContract);
-      console.log(abi);
-			
-      let contractAddress = await api.contract.getContractAddress(STATE.currentContract);
-      console.log(contractAddress);
-      
-      // execute the selected function
-      let functionArgs: any = [];
-      func.children.forEach((item: Abi) => {
-        functionArgs.push(item.abi.value);
-      });
-      console.log(functionArgs);
-      
-      
-      executeTransaction(contractAddress, abi, wallet, func.abi.name, functionArgs).then((txResponse: any) => {
-        console.log(txResponse);
-        channel.appendLine(`Transaction hash : ${txResponse.transactionHash}`);
-      }).catch((err: any) => {
-        console.log(err);
-        channel.appendLine(`Error : ${err}`);
-      });
-      channel.appendLine("####################################################################################");
-			channel.show(true);
-		})
-	);
-
-  context.subscriptions.push(
+    // abi
+    vscode.commands.registerCommand('eth-abi-interactive.editInput', async (input: Abi) => {
+      editInput(input, abiTreeDataProvider);
+    }),
+    vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
+      sendTransaction(func, channel);
+    }),
     vscode.commands.registerCommand('eth-abi-interactive.callContract', async (func: Abi) => {
-      console.log("~~~~~~~~~~~~~~ Will call read function ~~~~~~~~~~~~~~");
-      const abi = await api.contract.abi(STATE.currentContract);
-      const contractAddress = await api.contract.getContractAddress(STATE.currentContract);
-      const functionArgs: any = [];
-      func.children.forEach((item: Abi) => {
-        functionArgs.push(item.abi.value);
-      });
-      callContract(contractAddress, abi, func.abi.name, functionArgs).then((response: any) => {
-        channel.appendLine(`Contract call result : ${response}`);
-      }).catch((err: any) => {
-        console.error(err);
-        channel.appendLine(`Error : ${err}`);
-      });
-      channel.appendLine("####################################################################################");
-			channel.show(true);
-    })
-  );
-
-  const pendingTransactionDataProvider =
-    new PendingTransactionTreeDataProvider();
-
-  const pendingTransactionTreeView = vscode.window.createTreeView(
-    "eth-abi-interactive.pendingTxn",
-    {
-      treeDataProvider: pendingTransactionDataProvider,
+      callContract(func, channel);
+    }),
+    // contract 
+    vscode.commands.registerCommand("eth-abi-interactive.useContract",
+      async (node: ContractTreeItem) => {
+        useContract(node, abiTreeDataProvider, abiTreeView, pendingTransactionDataProvider, pendingTransactionTreeView);
+      }
+    ),
+    vscode.commands.registerCommand("eth-abi-interactive.refreshContracts", async (node: ContractTreeItem) => {
+      contractTreeView = await refreshContract(node, contractTreeDataProvider);
     }
+    )
   );
-  pendingTransactionTreeView.message =
-    "Select a contract and its pending transaction will appear here.";
+
+  context.subscriptions.push(abiTreeView);
+  context.subscriptions.push(contractTreeView as any);
   context.subscriptions.push(pendingTransactionTreeView);
+  context.subscriptions.push(channel);
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "eth-abi-interactive.useContract",
-      async (node: ContractTreeItem) => {
-        const isFilePresent = await getSourceName(node.label);
-        if (isFilePresent === false) {
-          await api.contract.selectContract(node.label);
-        }
-        const address = await api.contract.getContractAddress(node.label);
-        STATE.currentContract = node.label;
-        STATE.contractAddress = address;
-        abiTreeDataProvider.refresh();
-        abiTreeView.description = `${node.label} @ ${address}`;
-        abiTreeView.message = undefined;
-        pendingTransactionDataProvider.refresh();
-        pendingTransactionTreeView.description = `${node.label} @ ${address}`;
-        pendingTransactionTreeView.message = undefined;
-        STATE.flag = true;
-      }
-    )
-  );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "eth-abi-interactive.refreshContracts",
-      async (node: ContractTreeItem) => {
-        contractTreeView = vscode.window.createTreeView(
-          "eth-abi-interactive.contracts",
-          {
-            treeDataProvider: contractTreeDataProvider,
-          }
-        );
-      }
-    )
-  );
+  // context.subscriptions.push(
+  //   vscode.commands.registerCommand(
+  //     "eth-abi-interactive.refreshTreeView",
+  //     () => {
+  //       pendingTransactionDataProvider.refresh();
+  //       // alchemy.ws.removeAllListeners();
+  //     }
+  //   )
+  // );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "eth-abi-interactive.refreshTreeView",
-      () => {
-        pendingTransactionDataProvider.refresh();
-        // alchemy.ws.removeAllListeners();
-      }
-    )
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "eth-abi-interactive.deployContract",
-      async (input : any) => {
-        console.log(input);
-      }
-    )
-  );
+  // context.subscriptions.push(
+  //   vscode.commands.registerCommand(
+  //     "eth-abi-interactive.deployContract",
+  //     async (input: any) => {
+  //       console.log(input);
+  //     }
+  //   )
+  // );
 
   // alchemy.ws.on(
   // 	{
@@ -402,8 +282,6 @@ export async function activate(context: vscode.ExtensionContext) {
   // 	pendingTransactionDataProvider.loadData(arg);
   // });
 
-  const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
-  context.subscriptions.push(channel);
 }
 
-export function deactivate() {}
+export function deactivate() { }

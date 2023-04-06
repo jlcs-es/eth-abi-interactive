@@ -1,6 +1,6 @@
 import { Command, extensions, TreeDataProvider, TreeItem, TreeItemCollapsibleState, EventEmitter, Event, ThemeIcon } from 'vscode';
-import { myEmitter } from './NodeDependenciesProvider';
-import { STATE } from './state';
+import { myEmitter } from '../PendingTransactionTreeView/NodeDependenciesProvider';
+import { STATE } from '../state';
 
 
 export class Abi extends TreeItem {
