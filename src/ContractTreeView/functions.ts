@@ -58,7 +58,12 @@ const useContract = async (
     constructorTreeDataProvider.refresh();
     // constructorTreeView.description = `${node.label} @ ${address}`;
     // check if constructor tree viee has childern if not then show message
-    constructorTreeView.message = undefined;
+    const len = await api.contract.getConstructorInput(STATE.currentContract);
+    if (len.length === 0) {
+        constructorTreeView.message = "No constructor input";
+    } else {
+        constructorTreeView.message = undefined;
+    }
     pendingTransactionDataProvider.refresh();
     // pendingTransactionTreeView.description = `${node.label} @ ${address}`;
     pendingTransactionTreeView.message = undefined;
