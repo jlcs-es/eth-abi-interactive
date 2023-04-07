@@ -78,7 +78,7 @@
       },
       {
         "command": "eth-abi-interactive.editContractAddress",
-        "title": "Edit Constract Address",
+        "title": "Add / edit Constract Address",
         "icon": "$(edit)"
       },
       {
@@ -122,12 +122,12 @@
           "group": "inline"
         },
         {
-          "command": "eth-abi-interactive.deployContract",
+          "command": "eth-abi-interactive.editContractAddress",
           "when": "view == eth-abi-interactive.contracts && viewItem == contract",
           "group": "inline"
         },
         {
-          "command": "eth-abi-interactive.editContractAddress",
+          "command": "eth-abi-interactive.deployContract",
           "when": "view == eth-abi-interactive.contracts && viewItem == contract",
           "group": "inline"
         },
