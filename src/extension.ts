@@ -8,7 +8,7 @@ import { PendingTransactionTreeDataProvider } from "./PendingTransactionTreeView
 import { getSourceName } from "./utils/functions";
 import { Contract, ContractFactory, Wallet } from "ethers";
 import { callContract, editInput, sendTransaction } from "./AbiTreeView/functions";
-import { deployContract, refreshContract, useContract } from "./ContractTreeView/functions";
+import { deployContract, editContractAddress, refreshContract, updateContractAddress, useContract } from "./ContractTreeView/functions";
 import { ConstructorTreeDataProvider } from "./ConstructorTreeView/ConstructorTreeDataProvider";
 import { editConstructorInput } from "./ConstructorTreeView/functions";
 
@@ -84,6 +84,7 @@ export async function activate(context: vscode.ExtensionContext) {
     abiTreeDataProvider.refresh();
     contractTreeDataProvider.refresh();
     constructorTreeDataProvider.refresh();
+    updateContractAddress(STATE.currentContract, abiTreeView, constructorTreeView, pendingTransactionTreeView);
   });
 
   // functions
@@ -114,6 +115,11 @@ export async function activate(context: vscode.ExtensionContext) {
       } else {
         channel.appendLine(`Contract deployment failed.`);
       }
+    }),
+    vscode.commands.registerCommand("eth-abi-interactive.editContractAddress", async (input: any) => {
+      console.log(input);
+      editContractAddress(input);
+      updateContractAddress(STATE.currentContract, abiTreeView, constructorTreeView, pendingTransactionTreeView);
     }),
     // constructor
     vscode.commands.registerCommand("eth-abi-interactive.editConstructorInput", async (input: any) => {
