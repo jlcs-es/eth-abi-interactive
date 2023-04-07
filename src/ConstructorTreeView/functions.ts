@@ -40,4 +40,4 @@ const editConstructorInput = async (input: Constructor, constructorTreeDataProvi
 
 export {
     editConstructorInput
-}
+};

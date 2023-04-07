@@ -6,9 +6,9 @@ import { STATE } from "./state";
 import { PendingTransactionTreeDataProvider } from "./PendingTransactionTreeView/NodeDependenciesProvider";
 // import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
 import { getSourceName } from "./utils/functions";
-import { Contract, Wallet } from "ethers";
+import { Contract, ContractFactory, Wallet } from "ethers";
 import { callContract, editInput, sendTransaction } from "./AbiTreeView/functions";
-import { refreshContract, useContract } from "./ContractTreeView/functions";
+import { deployContract, refreshContract, useContract } from "./ContractTreeView/functions";
 import { ConstructorTreeDataProvider } from "./ConstructorTreeView/ConstructorTreeDataProvider";
 import { editConstructorInput } from "./ConstructorTreeView/functions";
 
@@ -57,7 +57,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   abiTreeView.message = "Select a contract and its ABI functions will appear here.";
 
-  
+
 
   // constructor tree view
   const constructorTreeDataProvider = new ConstructorTreeDataProvider(
@@ -100,10 +100,20 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // contract 
     vscode.commands.registerCommand("eth-abi-interactive.useContract", async (node: ContractTreeItem) => {
-      useContract(node, abiTreeDataProvider, abiTreeView, pendingTransactionDataProvider, pendingTransactionTreeView , constructorTreeDataProvider, constructorTreeView);
+      useContract(node, abiTreeDataProvider, abiTreeView, pendingTransactionDataProvider, pendingTransactionTreeView, constructorTreeDataProvider, constructorTreeView);
     }),
     vscode.commands.registerCommand("eth-abi-interactive.refreshContracts", async (node: ContractTreeItem) => {
       contractTreeView = await refreshContract(node, contractTreeDataProvider);
+    }),
+    vscode.commands.registerCommand("eth-abi-interactive.deployContract", async (input: any) => {
+      console.log(input);
+      channel.appendLine(`Deploying contract ${STATE.currentContract} ...`);
+      const contractAddress = await deployContract();
+      if (contractAddress) {
+        channel.appendLine(`Contract deployed at : ${contractAddress}`);
+      } else {
+        channel.appendLine(`Contract deployment failed.`);
+      }
     }),
     // constructor
     vscode.commands.registerCommand("eth-abi-interactive.editConstructorInput", async (input: any) => {
@@ -124,15 +134,6 @@ export async function activate(context: vscode.ExtensionContext) {
   //     () => {
   //       pendingTransactionDataProvider.refresh();
   //       // alchemy.ws.removeAllListeners();
-  //     }
-  //   )
-  // );
-
-  // context.subscriptions.push(
-  //   vscode.commands.registerCommand(
-  //     "eth-abi-interactive.deployContract",
-  //     async (input: any) => {
-  //       console.log(input);
   //     }
   //   )
   // );

@@ -77,6 +77,11 @@
         "icon": "$(edit)"
       },
       {
+        "command": "eth-abi-interactive.editContractAddress",
+        "title": "Edit Constract Address",
+        "icon": "$(edit)"
+      },
+      {
         "command": "eth-abi-interactive.sendTransaction",
         "title": "Send transaction",
         "icon": "$(play)"
@@ -118,6 +123,11 @@
         },
         {
           "command": "eth-abi-interactive.deployContract",
+          "when": "view == eth-abi-interactive.contracts && viewItem == contract",
+          "group": "inline"
+        },
+        {
+          "command": "eth-abi-interactive.editContractAddress",
           "when": "view == eth-abi-interactive.contracts && viewItem == contract",
           "group": "inline"
         },
