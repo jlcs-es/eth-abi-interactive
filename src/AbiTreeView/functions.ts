@@ -64,6 +64,9 @@ const editInput = async (input: Abi, abiTreeDataProvider: any) => {
 const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
     channel.appendLine("####################################################################################");
     channel.appendLine(`Sending transaction ${func.abi.name} ...`);
+    const functionName = func.abi.name;
+    let totalArgsCount = func.children.length;
+    let countArgs = 0;
     console.log(func);
 
     let wallet: any = await api.wallet.get();
@@ -78,14 +81,25 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
         channel.appendLine("No Contract available. Please deploy a contract first.");
         return;
     }
-    
+
     console.log(contractAddress);
     // execute the selected function
     let functionArgs: any = [];
     func.children.forEach((item: Abi) => {
-        functionArgs.push(item.abi.value);
+        if(item.abi.value !== "") {
+            functionArgs.push(item.abi.value);
+            countArgs++;
+        }
+        else {
+            channel.appendLine(`Error : ${functionName} function's ${item.abi.name} param is empty`);
+        }
     });
     console.log(functionArgs);
+    if (countArgs !== totalArgsCount) {
+        channel.appendLine(`Error : ${functionName} function's arguments are not complete`);
+        return;
+    }
+
     executeTransaction(contractAddress, abi, wallet, func.abi.name, functionArgs).then((txResponse: any) => {
         console.log(txResponse);
         channel.appendLine(`Transaction hash : ${txResponse.transactionHash}`);
@@ -101,14 +115,29 @@ const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
     console.log("~~~~~~~~~~~~~~ Will call read function ~~~~~~~~~~~~~~");
     const abi = await api.contract.abi(STATE.currentContract);
     const contractAddress = await api.contract.getContractAddress(STATE.currentContract);
+    const functionName = func.abi.name;
+    let totalArgsCount = func.children.length;
+    let countArgs = 0;
     if (contractAddress === "") {
         channel.appendLine("No Contract available. Please deploy a contract first.");
         return;
     }
     const functionArgs: any = [];
     func.children.forEach((item: Abi) => {
-        functionArgs.push(item.abi.value);
+        if(item.abi.value !== "") {
+            functionArgs.push(item.abi.value);
+            countArgs++;
+        }
+        else {
+            channel.appendLine(`Error : ${functionName} function's ${item.abi.name} param is empty`);
+        }
     });
+
+    if (countArgs !== totalArgsCount) {
+        channel.appendLine(`Error : ${functionName} function's arguments are not complete`);
+        return;
+    }
+
     callContractFunction(contractAddress, abi, func.abi.name, functionArgs).then((response: any) => {
         channel.appendLine(`Contract call result : ${response}`);
     }).catch((err: any) => {
