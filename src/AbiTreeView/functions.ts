@@ -73,16 +73,19 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
     console.log(abi);
 
     let contractAddress = await api.contract.getContractAddress(STATE.currentContract);
-    console.log(contractAddress);
 
+    if (contractAddress === "") {
+        channel.appendLine("No Contract available. Please deploy a contract first.");
+        return;
+    }
+    
+    console.log(contractAddress);
     // execute the selected function
     let functionArgs: any = [];
     func.children.forEach((item: Abi) => {
         functionArgs.push(item.abi.value);
     });
     console.log(functionArgs);
-
-
     executeTransaction(contractAddress, abi, wallet, func.abi.name, functionArgs).then((txResponse: any) => {
         console.log(txResponse);
         channel.appendLine(`Transaction hash : ${txResponse.transactionHash}`);
@@ -98,6 +101,10 @@ const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
     console.log("~~~~~~~~~~~~~~ Will call read function ~~~~~~~~~~~~~~");
     const abi = await api.contract.abi(STATE.currentContract);
     const contractAddress = await api.contract.getContractAddress(STATE.currentContract);
+    if (contractAddress === "") {
+        channel.appendLine("No Contract available. Please deploy a contract first.");
+        return;
+    }
     const functionArgs: any = [];
     func.children.forEach((item: Abi) => {
         functionArgs.push(item.abi.value);
