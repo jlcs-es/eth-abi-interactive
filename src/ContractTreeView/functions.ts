@@ -6,7 +6,7 @@ import { Contract as ContractTreeItem } from "./ContractTreeDataProvider";
 import { getSourceName } from "../utils/functions";
 import { ContractFactory } from "ethers";
 
-let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
+const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
 
 async function search(filePath: string, searchString: string, startLine: number = 0) {
@@ -48,15 +48,11 @@ const useContract = async (
     if (isFilePresent === false) {
         await api.contract.selectContract(node.label);
     }
-    // const address = await api.contract.getContractAddress(node.label);
     updateContractAddress(node.label, abiTreeView, constructorTreeView, pendingTransactionTreeView);
     STATE.currentContract = node.label;
-    // STATE.contractAddress = address;
     abiTreeDataProvider.refresh();
-    // abiTreeView.description = `${node.label} @ ${address}`;
     abiTreeView.message = undefined;
     constructorTreeDataProvider.refresh();
-    // constructorTreeView.description = `${node.label} @ ${address}`;
     // check if constructor tree viee has childern if not then show message
     const len = await api.contract.getConstructorInput(STATE.currentContract);
     if (len.length === 0) {
@@ -65,63 +61,52 @@ const useContract = async (
         constructorTreeView.message = undefined;
     }
     pendingTransactionDataProvider.refresh();
-    // pendingTransactionTreeView.description = `${node.label} @ ${address}`;
     pendingTransactionTreeView.message = undefined;
     STATE.flag = true;
-}
+};
 
 const refreshContract = async (node: ContractTreeItem, contractTreeDataProvider: any): Promise<vscode.TreeView<ContractTreeItem>> => {
     return vscode.window.createTreeView("eth-abi-interactive.contracts", { treeDataProvider: contractTreeDataProvider, });
-}
+};
 
 const deployContract = async () => {
     const provider = await api.provider.get();
     const wallet = await api.wallet.get();
     const compiledOutput = await vscode.workspace.findFiles(`**/${STATE.currentContract}.json`, '', 1);
-    console.log(compiledOutput[0].fsPath);
     const abi = JSON.parse(fs.readFileSync(compiledOutput[0].fsPath, "utf8")).abi;
     const bytecode = JSON.parse(fs.readFileSync(compiledOutput[0].fsPath, "utf8")).bytecode;
-    console.log(abi);
-    console.log(bytecode);
     const factory = new ContractFactory(abi, bytecode, wallet);
     let contract;
     const param = [];
     let constructor;
     try {
         constructor = await api.contract.getConstructorInput(STATE.currentContract);
-        for (let ele of constructor) {
-            console.log(ele.value);
+        for (const ele of constructor) {
             param.push(ele.value);
         }
         contract = await factory.deploy(...param);
-        await contract.deployTransaction.wait()
+        await contract.deployTransaction.wait();
     } catch (error: any) {
-        console.log("No constructor input file found");
         contract = await factory.deploy();
         await contract.deployTransaction.wait();
     }
-    console.log("Contract deployed to address:", contract?.address);
     return contract?.address;
 
 };
 
 const editContractAddress = async (input : any) => {
     let filePath = "";
-    let path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_deployed_address.json`);
+    const path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_deployed_address.json`);
     filePath = path[0].fsPath;
-    console.log(filePath);
 
     const document = await vscode.workspace.openTextDocument(filePath);
-
-    console.log(input);
-    let line = await search(filePath, `"address": "`, 0);
-    console.log(line, `"address": "`);
+    const line = await search(filePath, `"address": "`, 0);
 
     const cursorPosition = new vscode.Position(line.line, line.character+12);
     const editor = await vscode.window.showTextDocument(document);
     editor.selection = new vscode.Selection(cursorPosition, cursorPosition);
     editor.revealRange(new vscode.Range(cursorPosition, cursorPosition));
-}
+};
 
 export {
     useContract,

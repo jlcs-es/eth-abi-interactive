@@ -1,5 +1,4 @@
-import { Command, extensions, TreeDataProvider, TreeItem, TreeItemCollapsibleState, EventEmitter, Event, ThemeIcon } from 'vscode';
-import { myEmitter } from '../PendingTransactionTreeView/NodeDependenciesProvider';
+import { extensions, TreeDataProvider, TreeItem, TreeItemCollapsibleState, EventEmitter, Event, ThemeIcon } from 'vscode';
 import { STATE } from '../state';
 
 
@@ -24,7 +23,7 @@ export class Abi extends TreeItem {
   }
 }
 
-let ethcodeExtension: any = extensions.getExtension('7finney.ethcode');
+const ethcodeExtension: any = extensions.getExtension('7finney.ethcode');
 const api: any = ethcodeExtension.exports;
 
 
@@ -37,13 +36,11 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
 
   async getChildren(element?: Abi): Promise<Abi[]> {
     const leaves = [];
-    let inputsEthcode: any = await api.contract.getFunctionInput(STATE.currentContract);
+    const inputsEthcode: any = await api.contract.getFunctionInput(STATE.currentContract);
     if (!element) {
       const abi = await api.contract.abi(STATE.currentContract);
       
       for (const entry of abi) {
-        console.log('============== entry types ==============');
-        console.log(entry.type);
         if (entry.type === "function" ) {
           const coll = (entry.inputs && entry.inputs.length)
             ? TreeItemCollapsibleState.Expanded
@@ -62,7 +59,6 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
       }
     } else if (element.abi.type === "function") {
       const value = inputsEthcode.find((i: any) => i.name === element.abi.name);
-      console.log(value);
       for (const input of value.inputs) {
         leaves.push(
           new Abi(

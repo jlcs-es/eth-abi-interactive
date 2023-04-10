@@ -19,7 +19,7 @@ import { editConstructorInput } from "./ConstructorTreeView/functions";
 
 // const alchemy = new Alchemy(settings);
 
-let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
+const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -107,7 +107,6 @@ export async function activate(context: vscode.ExtensionContext) {
       contractTreeView = await refreshContract(node, contractTreeDataProvider);
     }),
     vscode.commands.registerCommand("eth-abi-interactive.deployContract", async (input: any) => {
-      console.log(input);
       channel.appendLine(`Deploying contract ${STATE.currentContract} ...`);
       const contractAddress = await deployContract();
       if (contractAddress) {
@@ -117,13 +116,11 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }),
     vscode.commands.registerCommand("eth-abi-interactive.editContractAddress", async (input: any) => {
-      console.log(input);
       editContractAddress(input);
       updateContractAddress(STATE.currentContract, abiTreeView, constructorTreeView, pendingTransactionTreeView);
     }),
     // constructor
     vscode.commands.registerCommand("eth-abi-interactive.editConstructorInput", async (input: any) => {
-      console.log(input);
       editConstructorInput(input, constructorTreeDataProvider);
     }),
   );

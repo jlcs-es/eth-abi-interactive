@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import { Contract, Wallet } from "ethers";
 
-let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
+const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
 
 async function search(filePath: string, searchString: string, startLine: number = 0) {
@@ -17,24 +17,15 @@ async function search(filePath: string, searchString: string, startLine: number 
 
 const editConstructorInput = async (input: Constructor, constructorTreeDataProvider: any) => {
     let filePath = "";
-    let path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_constructor_input.json`);
+    const path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_constructor_input.json`);
     filePath = path[0].fsPath;
-    console.log(filePath);
-
     const document = await vscode.workspace.openTextDocument(filePath);
-
-    console.log(input);
-
-    let lineNumber = await search(filePath, `"name": "${input.label}"`);
-    console.log(lineNumber, `"name": "${input.label}"`);
-    let line = await search(filePath, `"name": "${input.label}"`, lineNumber.line);
-    console.log(line, `"name": "${input.label}"`);
-
+    const lineNumber = await search(filePath, `"name": "${input.label}"`);
+    const line = await search(filePath, `"name": "${input.label}"`, lineNumber.line);
     const cursorPosition = new vscode.Position(line.line + 2, line.character + 10);
     const editor = await vscode.window.showTextDocument(document);
     editor.selection = new vscode.Selection(cursorPosition, cursorPosition);
     editor.revealRange(new vscode.Range(cursorPosition, cursorPosition));
-
     constructorTreeDataProvider.refresh(input);
 };
 
