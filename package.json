@@ -11,13 +11,10 @@
   },
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.50.0"
+    "vscode": "^1.77.0"
   },
   "categories": [
     "Other"
-  ],
-  "activationEvents": [
-    "onView:eth-abi-interactive.contracts"
   ],
   "extensionDependencies": [
     "7finney.ethcode"
@@ -43,6 +40,11 @@
           "name": "Contracts"
         },
         {
+          "id": "eth-abi-interactive.constructor",
+          "name": "Constructor",
+          "visibility": "collapsed"
+        },
+        {
           "id": "eth-abi-interactive.abis",
           "name": "ABI",
           "visibility": "collapsed"
@@ -63,6 +65,36 @@
         "command": "eth-abi-interactive.refreshTreeView",
         "title": "Stop",
         "icon": "$(debug-pause)"
+      },
+      {
+        "command": "eth-abi-interactive.editInput",
+        "title": "Edit input value",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "eth-abi-interactive.editConstructorInput",
+        "title": "Edit input value",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "eth-abi-interactive.editContractAddress",
+        "title": "Add / edit Constract Address",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "eth-abi-interactive.sendTransaction",
+        "title": "Send transaction",
+        "icon": "$(play)"
+      },
+      {
+        "command": "eth-abi-interactive.callContract",
+        "title": "Call contract",
+        "icon": "$(play)"
+      },
+      {
+        "command": "eth-abi-interactive.deployContract",
+        "title": "Deploy contract",
+        "icon": "$(play)"
       }
     ],
     "menus": {
@@ -78,7 +110,38 @@
           "group": "navigation"
         }
       ],
-      "view/item/context": []
+      "view/item/context": [
+        {
+          "command": "eth-abi-interactive.editInput",
+          "when": "view == eth-abi-interactive.abis && viewItem == abiInput",
+          "group": "inline"
+        },
+        {
+          "command": "eth-abi-interactive.editConstructorInput",
+          "when": "view == eth-abi-interactive.constructor && viewItem == constructor",
+          "group": "inline"
+        },
+        {
+          "command": "eth-abi-interactive.editContractAddress",
+          "when": "view == eth-abi-interactive.contracts && viewItem == contract",
+          "group": "inline"
+        },
+        {
+          "command": "eth-abi-interactive.deployContract",
+          "when": "view == eth-abi-interactive.contracts && viewItem == contract",
+          "group": "inline"
+        },
+        {
+          "command": "eth-abi-interactive.sendTransaction",
+          "when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
+          "group": "inline"
+        },
+        {
+          "command": "eth-abi-interactive.callContract",
+          "when": "view == eth-abi-interactive.abis && viewItem == abiReadFunction",
+          "group": "inline"
+        }
+      ]
     }
   },
   "scripts": {
@@ -104,9 +167,8 @@
     "vscode-test": "^1.4.0"
   },
   "dependencies": {
-    "alchemy-sdk": "^2.6.1",
     "bnc-sdk": "^4.6.7",
-    "web3": "^1.3.0",
+    "ethers": "5.4.0",
     "ws": "^8.12.1"
   }
 }
