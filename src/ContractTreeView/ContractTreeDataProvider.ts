@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
+const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
 
 export class ContractTreeDataProvider
@@ -13,7 +13,7 @@ export class ContractTreeDataProvider
   }
 
   async getChildren(element?: Contract): Promise<Contract[]> {
-    let contracts: string[] = await api.contract.list();
+    const contracts: string[] = await api.contract.list();
     if (contracts.length === 0) {
       vscode.window.showInformationMessage("No Contracts in empty workspace");
       return [];

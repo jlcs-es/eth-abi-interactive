@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import { Contract, Wallet } from "ethers";
 
-let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
+const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
 
 async function search(filePath: string, searchString: string, startLine: number = 0) {
@@ -16,23 +16,15 @@ async function search(filePath: string, searchString: string, startLine: number 
 }
 
 async function executeTransaction(contractAddress: string, abi: any[], wallet: Wallet, functionName: string, args: any[]) {
-    console.log('.................executeTransaction.................');
     const contract = new Contract(contractAddress, abi, wallet);
-    console.log(contract);
     const tx = await contract[functionName](...args);
-    console.log(tx);
     const txResponse = await tx.wait();
     return txResponse;
 }
 
 async function callContractFunction(contractAddress: string, abi: any[], functionName: string, args: any[]) {
-    console.log('.................callContract.................');
     const ethcodeProvider = await api.provider.get();
-    console.log(contractAddress);
     const contract = new Contract(contractAddress, abi, ethcodeProvider);
-    console.log(contract);
-    console.log(functionName);
-    console.log(args);
     const result = await contract[functionName](...args);
     return result;
 }
@@ -40,18 +32,12 @@ async function callContractFunction(contractAddress: string, abi: any[], functio
 
 const editInput = async (input: Abi, abiTreeDataProvider: any) => {
     let filePath = "";
-    let path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_functions_input.json`);
+    const path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_functions_input.json`);
     filePath = path[0].fsPath;
-    console.log(filePath);
 
     const document = await vscode.workspace.openTextDocument(filePath);
-
-    console.log(input);
-
-    let lineNumber = await search(filePath, `"name": "${input.parent?.label}"`);
-    console.log(lineNumber, `"name": "${input.parent?.label}"`);
-    let line = await search(filePath, `"name": "${input.abi.name}"`, lineNumber.line);
-    console.log(line, `"name": "${input.abi.name}"`);
+    const lineNumber = await search(filePath, `"name": "${input.parent?.label}"`);
+    const line = await search(filePath, `"name": "${input.abi.name}"`, lineNumber.line);
 
     const cursorPosition = new vscode.Position(line.line + 2, line.character + 10);
     const editor = await vscode.window.showTextDocument(document);
@@ -62,29 +48,25 @@ const editInput = async (input: Abi, abiTreeDataProvider: any) => {
 };
 
 const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
-    channel.appendLine("####################################################################################");
     channel.appendLine(`Sending transaction ${func.abi.name} ...`);
     const functionName = func.abi.name;
-    let totalArgsCount = func.children.length;
+    const totalArgsCount = func.children.length;
     let countArgs = 0;
-    console.log(func);
 
-    let wallet: any = await api.wallet.get();
+    const wallet: any = await api.wallet.get();
     channel.appendLine(`Wallet : ${wallet.address}`);
 
-    let abi = await api.contract.abi(STATE.currentContract);
-    console.log(abi);
+    const abi = await api.contract.abi(STATE.currentContract);
 
-    let contractAddress = await api.contract.getContractAddress(STATE.currentContract);
+    const contractAddress = await api.contract.getContractAddress(STATE.currentContract);
 
     if (contractAddress === "") {
         channel.appendLine("No Contract available. Please deploy a contract first.");
         return;
     }
 
-    console.log(contractAddress);
     // execute the selected function
-    let functionArgs: any = [];
+    const functionArgs: any = [];
     func.children.forEach((item: Abi) => {
         if(item.abi.value !== "") {
             functionArgs.push(item.abi.value);
@@ -94,7 +76,6 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
             channel.appendLine(`Error : ${functionName} function's ${item.abi.name} param is empty`);
         }
     });
-    console.log(functionArgs);
     if (countArgs !== totalArgsCount) {
         channel.appendLine(`Error : ${functionName} function's arguments are not complete`);
         return;
@@ -107,16 +88,14 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
         console.log(err);
         channel.appendLine(`Error : ${err}`);
     });
-    channel.appendLine("####################################################################################");
     channel.show(true);
 };
 
 const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
-    console.log("~~~~~~~~~~~~~~ Will call read function ~~~~~~~~~~~~~~");
     const abi = await api.contract.abi(STATE.currentContract);
     const contractAddress = await api.contract.getContractAddress(STATE.currentContract);
     const functionName = func.abi.name;
-    let totalArgsCount = func.children.length;
+    const totalArgsCount = func.children.length;
     let countArgs = 0;
     if (contractAddress === "") {
         channel.appendLine("No Contract available. Please deploy a contract first.");
@@ -144,7 +123,6 @@ const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
         console.error(err);
         channel.appendLine(`Error : ${err}`);
     });
-    channel.appendLine("####################################################################################");
     channel.show(true);
 };
 

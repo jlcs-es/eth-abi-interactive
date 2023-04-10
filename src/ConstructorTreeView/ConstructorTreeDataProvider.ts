@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { STATE } from "../state";
 
-let ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
+const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
 
 export class Constructor extends vscode.TreeItem {
@@ -38,15 +38,11 @@ export class ConstructorTreeDataProvider implements vscode.TreeDataProvider<Cons
     try {
         constructorInputsEthcode = await api.contract.getConstructorInput(STATE.currentContract);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return leaves;
     }
-    console.log("============== constructorInputsEthcode ==============");
-    console.log(constructorInputsEthcode);
     if (!element) {
         for (const entry of constructorInputsEthcode) {
-            console.log("============== entry types ==============");
-            console.log(entry.type);
             leaves.push(
                 new Constructor(
                     entry.name,
@@ -57,7 +53,6 @@ export class ConstructorTreeDataProvider implements vscode.TreeDataProvider<Cons
         }
     }
     return leaves;
-
   }
 
   private _onDidChangeTreeData: vscode.EventEmitter<Constructor | undefined> =
