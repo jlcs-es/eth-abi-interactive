@@ -2,7 +2,7 @@
   "name": "eth-abi-interactive",
   "displayName": "Eth ABI Interactive",
   "publisher": "7finney",
-  "description": "Smart Contracts ABI Interactive Interface",
+  "description": "Smart Contract ABI Interactive Interface",
   "license": "MIT",
   "icon": "media/eth.png",
   "repository": {
