@@ -48,7 +48,7 @@ export class Contract extends vscode.TreeItem {
 
   command = {
     title: "Use Contract",
-    command: "eth-abi-interactive.useContract",
+    command: "sol-exec.useContract",
     arguments: [this],
   };
 

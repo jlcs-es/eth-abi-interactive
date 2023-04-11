@@ -1,20 +1,26 @@
 {
-  "name": "eth-abi-interactive",
-  "displayName": "Eth ABI Interactive",
+  "name": "sol-exec",
+  "displayName": "Solidity execute!",
   "publisher": "7finney",
-  "description": "Smart Contract ABI Interactive Interface",
+  "description": "Solidity ABI executions on any EVM supported network",
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "blockchain",
+    "developer"
+  ],
   "license": "MIT",
   "icon": "media/eth.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/7finney/eth-abi-interactive"
+    "url": "https://github.com/7finney/sol-exec"
   },
   "version": "0.0.2",
   "engines": {
     "vscode": "^1.77.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages"
   ],
   "extensionDependencies": [
     "7finney.ethcode"
@@ -22,77 +28,77 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Ethereum ABI Interactive"
+      "title": "Solidity execute!"
     },
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "eth-abi-interactive-container",
-          "title": "Eth ABI Interactive",
+          "id": "sol-exec-container",
+          "title": "Solidity execute",
           "icon": "media/eth.png"
         }
       ]
     },
     "views": {
-      "eth-abi-interactive-container": [
+      "sol-exec-container": [
         {
-          "id": "eth-abi-interactive.contracts",
+          "id": "sol-exec.contracts",
           "name": "Contracts"
         },
         {
-          "id": "eth-abi-interactive.constructor",
+          "id": "sol-exec.constructor",
           "name": "Constructor",
           "visibility": "collapsed"
         },
         {
-          "id": "eth-abi-interactive.abis",
+          "id": "sol-exec.abis",
           "name": "ABI",
           "visibility": "collapsed"
         },
         {
-          "id": "eth-abi-interactive.pendingTxn",
+          "id": "sol-exec.pendingTxn",
           "name": "Pending Transactions"
         }
       ]
     },
     "commands": [
       {
-        "command": "eth-abi-interactive.refreshContracts",
+        "command": "sol-exec.refreshContracts",
         "title": "Refresh",
         "icon": "$(extensions-refresh)"
       },
       {
-        "command": "eth-abi-interactive.refreshTreeView",
+        "command": "sol-exec.refreshTreeView",
         "title": "Stop",
         "icon": "$(debug-pause)"
       },
       {
-        "command": "eth-abi-interactive.editInput",
+        "command": "sol-exec.editInput",
         "title": "Edit input value",
         "icon": "$(edit)"
       },
       {
-        "command": "eth-abi-interactive.editConstructorInput",
+        "command": "sol-exec.editConstructorInput",
         "title": "Edit input value",
         "icon": "$(edit)"
       },
       {
-        "command": "eth-abi-interactive.editContractAddress",
+        "command": "sol-exec.editContractAddress",
         "title": "Add / edit Constract Address",
         "icon": "$(edit)"
       },
       {
-        "command": "eth-abi-interactive.sendTransaction",
+        "command": "sol-exec.sendTransaction",
         "title": "Send transaction",
         "icon": "$(play)"
       },
       {
-        "command": "eth-abi-interactive.callContract",
+        "command": "sol-exec.callContract",
         "title": "Call contract",
         "icon": "$(play)"
       },
       {
-        "command": "eth-abi-interactive.deployContract",
+        "command": "sol-exec.deployContract",
         "title": "Deploy contract",
         "icon": "$(play)"
       }
@@ -100,45 +106,45 @@
     "menus": {
       "view/title": [
         {
-          "command": "eth-abi-interactive.refreshTreeView",
-          "when": "view == eth-abi-interactive.pendingTxn",
+          "command": "sol-exec.refreshTreeView",
+          "when": "view == sol-exec.pendingTxn",
           "group": "navigation"
         },
         {
-          "command": "eth-abi-interactive.refreshContracts",
-          "when": "view == eth-abi-interactive.contracts",
+          "command": "sol-exec.refreshContracts",
+          "when": "view == sol-exec.contracts",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "eth-abi-interactive.editInput",
-          "when": "view == eth-abi-interactive.abis && viewItem == abiInput",
+          "command": "sol-exec.editInput",
+          "when": "view == sol-exec.abis && viewItem == abiInput",
           "group": "inline"
         },
         {
-          "command": "eth-abi-interactive.editConstructorInput",
-          "when": "view == eth-abi-interactive.constructor && viewItem == constructor",
+          "command": "sol-exec.editConstructorInput",
+          "when": "view == sol-exec.constructor && viewItem == constructor",
           "group": "inline"
         },
         {
-          "command": "eth-abi-interactive.editContractAddress",
-          "when": "view == eth-abi-interactive.contracts && viewItem == contract",
+          "command": "sol-exec.editContractAddress",
+          "when": "view == sol-exec.contracts && viewItem == contract",
           "group": "inline"
         },
         {
-          "command": "eth-abi-interactive.deployContract",
-          "when": "view == eth-abi-interactive.contracts && viewItem == contract",
+          "command": "sol-exec.deployContract",
+          "when": "view == sol-exec.contracts && viewItem == contract",
           "group": "inline"
         },
         {
-          "command": "eth-abi-interactive.sendTransaction",
-          "when": "view == eth-abi-interactive.abis && viewItem == abiFunction",
+          "command": "sol-exec.sendTransaction",
+          "when": "view == sol-exec.abis && viewItem == abiFunction",
           "group": "inline"
         },
         {
-          "command": "eth-abi-interactive.callContract",
-          "when": "view == eth-abi-interactive.abis && viewItem == abiReadFunction",
+          "command": "sol-exec.callContract",
+          "when": "view == sol-exec.abis && viewItem == abiReadFunction",
           "group": "inline"
         }
       ]

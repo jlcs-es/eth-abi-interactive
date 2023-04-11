@@ -66,7 +66,7 @@ const useContract = async (
 };
 
 const refreshContract = async (node: ContractTreeItem, contractTreeDataProvider: any): Promise<vscode.TreeView<ContractTreeItem>> => {
-    return vscode.window.createTreeView("eth-abi-interactive.contracts", { treeDataProvider: contractTreeDataProvider, });
+    return vscode.window.createTreeView("sol-exec.contracts", { treeDataProvider: contractTreeDataProvider, });
 };
 
 const deployContract = async () => {

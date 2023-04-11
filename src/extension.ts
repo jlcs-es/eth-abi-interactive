@@ -30,19 +30,19 @@ export async function activate(context: vscode.ExtensionContext) {
     return;
   }
 
-  const channel = vscode.window.createOutputChannel("Eth ABI Interactive");
+  const channel = vscode.window.createOutputChannel("Solidity execute!");
 
   // Contract Tree View
   const contractTreeDataProvider = new ContractTreeDataProvider(
     vscode.workspace.rootPath
   );
 
-  let contractTreeView = vscode.window.createTreeView("eth-abi-interactive.contracts", {
+  let contractTreeView = vscode.window.createTreeView("sol-exec.contracts", {
     treeDataProvider: contractTreeDataProvider,
   });
 
   api.events.contracts.event(() => {
-    contractTreeView = vscode.window.createTreeView("eth-abi-interactive.contracts", {
+    contractTreeView = vscode.window.createTreeView("sol-exec.contracts", {
       treeDataProvider: contractTreeDataProvider,
     });
   });
@@ -51,7 +51,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const abiTreeDataProvider = new AbiTreeDataProvider(
     vscode.workspace.rootPath
   );
-  const abiTreeView = vscode.window.createTreeView("eth-abi-interactive.abis", {
+  const abiTreeView = vscode.window.createTreeView("sol-exec.abis", {
     treeDataProvider: abiTreeDataProvider,
   });
 
@@ -64,7 +64,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.workspace.rootPath
   );
 
-  const constructorTreeView = vscode.window.createTreeView("eth-abi-interactive.constructor", {
+  const constructorTreeView = vscode.window.createTreeView("sol-exec.constructor", {
     treeDataProvider: constructorTreeDataProvider,
   });
 
@@ -73,7 +73,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // pending transaction tree view
   const pendingTransactionDataProvider = new PendingTransactionTreeDataProvider();
 
-  const pendingTransactionTreeView = vscode.window.createTreeView("eth-abi-interactive.pendingTxn", {
+  const pendingTransactionTreeView = vscode.window.createTreeView("sol-exec.pendingTxn", {
     treeDataProvider: pendingTransactionDataProvider,
   });
 
@@ -90,23 +90,23 @@ export async function activate(context: vscode.ExtensionContext) {
   // functions
   context.subscriptions.push(
     // abi
-    vscode.commands.registerCommand('eth-abi-interactive.editInput', async (input: Abi) => {
+    vscode.commands.registerCommand('sol-exec.editInput', async (input: Abi) => {
       editInput(input, abiTreeDataProvider);
     }),
-    vscode.commands.registerCommand('eth-abi-interactive.sendTransaction', async (func: Abi) => {
+    vscode.commands.registerCommand('sol-exec.sendTransaction', async (func: Abi) => {
       sendTransaction(func, channel);
     }),
-    vscode.commands.registerCommand('eth-abi-interactive.callContract', async (func: Abi) => {
+    vscode.commands.registerCommand('sol-exec.callContract', async (func: Abi) => {
       callContract(func, channel);
     }),
     // contract 
-    vscode.commands.registerCommand("eth-abi-interactive.useContract", async (node: ContractTreeItem) => {
+    vscode.commands.registerCommand("sol-exec.useContract", async (node: ContractTreeItem) => {
       useContract(node, abiTreeDataProvider, abiTreeView, pendingTransactionDataProvider, pendingTransactionTreeView, constructorTreeDataProvider, constructorTreeView);
     }),
-    vscode.commands.registerCommand("eth-abi-interactive.refreshContracts", async (node: ContractTreeItem) => {
+    vscode.commands.registerCommand("sol-exec.refreshContracts", async (node: ContractTreeItem) => {
       contractTreeView = await refreshContract(node, contractTreeDataProvider);
     }),
-    vscode.commands.registerCommand("eth-abi-interactive.deployContract", async (input: any) => {
+    vscode.commands.registerCommand("sol-exec.deployContract", async (input: any) => {
       channel.appendLine(`Deploying contract ${STATE.currentContract} ...`);
       const contractAddress = await deployContract();
       if (contractAddress) {
@@ -115,12 +115,12 @@ export async function activate(context: vscode.ExtensionContext) {
         channel.appendLine(`Contract deployment failed.`);
       }
     }),
-    vscode.commands.registerCommand("eth-abi-interactive.editContractAddress", async (input: any) => {
+    vscode.commands.registerCommand("sol-exec.editContractAddress", async (input: any) => {
       editContractAddress(input);
       updateContractAddress(STATE.currentContract, abiTreeView, constructorTreeView, pendingTransactionTreeView);
     }),
     // constructor
-    vscode.commands.registerCommand("eth-abi-interactive.editConstructorInput", async (input: any) => {
+    vscode.commands.registerCommand("sol-exec.editConstructorInput", async (input: any) => {
       editConstructorInput(input, constructorTreeDataProvider);
     }),
   );
@@ -133,7 +133,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // context.subscriptions.push(
   //   vscode.commands.registerCommand(
-  //     "eth-abi-interactive.refreshTreeView",
+  //     "sol-exec.refreshTreeView",
   //     () => {
   //       pendingTransactionDataProvider.refresh();
   //       // alchemy.ws.removeAllListeners();

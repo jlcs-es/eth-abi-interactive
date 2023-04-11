@@ -12,7 +12,7 @@ class Status {
 
     // Get the ABI JSON Files' directory from settings
     public get contractsPath() : string {
-        const conf = vscode.workspace.getConfiguration("eth-abi-interactive");
+        const conf = vscode.workspace.getConfiguration("sol-exec");
         if (conf.has("contractsPath")) {
             return conf.get("contractsPath") as string;
         }

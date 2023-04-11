@@ -18,7 +18,7 @@ export class Constructor extends vscode.TreeItem {
 
   command = {
     title: "Edit Value",
-    command: "eth-abi-interactive.editConstructorInput",
+    command: "sol-exec.editConstructorInput",
     arguments: [this],
   };
 
