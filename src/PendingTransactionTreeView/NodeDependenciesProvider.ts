@@ -1,44 +1,44 @@
 import * as vscode from 'vscode';
-import EventEmitter from 'events';
-class MyEmitter extends EventEmitter {}
 
-export const myEmitter = new MyEmitter();
+export class PendingTransactionTreeDataProvider implements vscode.TreeDataProvider<PendingTransaction> {
 
-interface TreeItemData {
-  label: string;
-  collapsibleState: vscode.TreeItemCollapsibleState;
-  children?: TreeItemData[];
-}
+  onDidChangeTreeData?: vscode.Event<void | PendingTransaction | PendingTransaction[] | null | undefined> | undefined;
 
-
-export class PendingTransactionTreeDataProvider implements vscode.TreeDataProvider<TreeItemData> {
-
-  private _onDidChangeTreeData: vscode.EventEmitter<TreeItemData | undefined> = new vscode.EventEmitter<TreeItemData | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<TreeItemData | undefined> = this._onDidChangeTreeData.event;
-
-  private treeData: TreeItemData[] = [];
-
-  getTreeItem(element: TreeItemData): vscode.TreeItem {
-    return {
-      label: element.label,
-      collapsibleState: element.collapsibleState
-    };
+  getTreeItem(element: PendingTransaction): vscode.TreeItem {
+    return element;
   }
 
-  getChildren(element?: TreeItemData): Thenable<TreeItemData[]> {
-    if (!element) {
-      return Promise.resolve(this.treeData);
-    }
-    return Promise.resolve(element.children || []);
+  async getChildren(element?: PendingTransaction): Promise<PendingTransaction[]> {
+    const pendingTransactions: PendingTransaction[] = [];
+    pendingTransactions.push(new PendingTransaction("Pending Transaction 1"));
+    pendingTransactions.push(new PendingTransaction("Pending Transaction 2"));
+    pendingTransactions.push(new PendingTransaction("Pending Transaction 3"));
+    return pendingTransactions;
   }
+
+  private _onDidChangeTreeData: vscode.EventEmitter<PendingTransaction | undefined> = new vscode.EventEmitter<PendingTransaction | undefined>();
+  // readonly onDidChangeTreeData: vscode.Event<PendingTransaction | undefined> = this._onDidChangeTreeData.event;
 
   refresh(): void {
     this._onDidChangeTreeData.fire(undefined);
   }
+}
 
-  loadData(obj: TreeItemData): void {
-    this.treeData.push(obj);
-    this.refresh(); // refresh the tree view after loading data
+export class PendingTransaction extends vscode.TreeItem {
+  contextValue: string;
+  constructor(
+    public readonly label: string
+  ) {
+    super(label);
+    this.contextValue = "pendingTransaction";
   }
 
+  command = {
+    title: "Select pending transacion",
+    command: "sol-exec.selectPendingTransaction",
+    arguments: [this],
+  };
+
+  iconPath = new vscode.ThemeIcon("symbol-misc");
 }
+
