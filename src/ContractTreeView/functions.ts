@@ -1,9 +1,7 @@
 import { STATE } from "../state";
 import * as vscode from "vscode";
 import * as fs from "fs";
-import { Contract, Wallet } from "ethers";
 import { Contract as ContractTreeItem } from "./ContractTreeDataProvider";
-import { getSourceName } from "../utils/functions";
 import { ContractFactory } from "ethers";
 
 const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
@@ -44,16 +42,13 @@ const useContract = async (
     constructorTreeDataProvider: any,
     constructorTreeView: any
 ) => {
-    const isFilePresent = await getSourceName(node.label);
-    if (isFilePresent === false) {
-        await api.contract.selectContract(node.label);
-    }
+    await api.contract.selectContract(node.label);
     updateContractAddress(node.label, abiTreeView, constructorTreeView, pendingTransactionTreeView);
     STATE.currentContract = node.label;
     abiTreeDataProvider.refresh();
     abiTreeView.message = undefined;
     constructorTreeDataProvider.refresh();
-    // check if constructor tree viee has childern if not then show message
+    // check if constructor tree view has childern if not then show message
     const len = await api.contract.getConstructorInput(STATE.currentContract);
     if (len.length === 0) {
         constructorTreeView.message = "No constructor input";
