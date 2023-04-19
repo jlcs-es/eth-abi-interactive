@@ -4,16 +4,13 @@ import { ContractTreeDataProvider, Contract as ContractTreeItem } from "./Contra
 import { AbiTreeDataProvider, Abi } from "./AbiTreeView/AbiTreeDataProvider";
 import { STATE } from "./state";
 import { PendingTransactionTreeDataProvider } from "./PendingTransactionTreeView/NodeDependenciesProvider";
-// import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
-import { getSourceName } from "./utils/functions";
-import { Contract, ContractFactory, Wallet } from "ethers";
 import { callContract, editInput, sendTransaction } from "./AbiTreeView/functions";
 import { deployContract, editContractAddress, refreshContract, updateContractAddress, useContract } from "./ContractTreeView/functions";
 import { ConstructorTreeDataProvider } from "./ConstructorTreeView/ConstructorTreeDataProvider";
 import { editConstructorInput } from "./ConstructorTreeView/functions";
 
 // const settings = {
-//   apiKey: "2BfT7PmhS5UzBkXbguSIXm5Nk3myk0ey",
+//   apiKey: "",
 //   network: Network.ETH_MAINNET,
 // };
 
@@ -34,7 +31,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Contract Tree View
   const contractTreeDataProvider = new ContractTreeDataProvider(
-    vscode.workspace.rootPath
+    vscode.workspace.workspaceFolders?.[0].uri.fsPath
   );
 
   let contractTreeView = vscode.window.createTreeView("sol-exec.contracts", {
@@ -49,7 +46,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Abi Tree View
   const abiTreeDataProvider = new AbiTreeDataProvider(
-    vscode.workspace.rootPath
+    vscode.workspace.workspaceFolders?.[0].uri.fsPath
   );
   const abiTreeView = vscode.window.createTreeView("sol-exec.abis", {
     treeDataProvider: abiTreeDataProvider,
@@ -61,7 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // constructor tree view
   const constructorTreeDataProvider = new ConstructorTreeDataProvider(
-    vscode.workspace.rootPath
+    vscode.workspace.workspaceFolders?.[0].uri.fsPath
   );
 
   const constructorTreeView = vscode.window.createTreeView("sol-exec.constructor", {
