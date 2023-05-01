@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
 import { ContractTreeDataProvider, Contract as ContractTreeItem } from "./ContractTreeView/ContractTreeDataProvider";
 import { AbiTreeDataProvider, Abi } from "./AbiTreeView/AbiTreeDataProvider";
 import { STATE } from "./state";
@@ -76,8 +75,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   pendingTransactionTreeView.message = "Select a contract and its pending transaction will appear here.";
 
-  fs.watch(path_[0].uri.fsPath, { recursive: true }, (eventType, filename) => {
-    console.log(`File ${filename} has been ${eventType}`);
+  const contractsWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.workspace.workspaceFolders?.[0] ?? '', '**/*.json'));
+  contractsWatcher.onDidChange((uri) => {
     abiTreeDataProvider.refresh();
     contractTreeDataProvider.refresh();
     constructorTreeDataProvider.refresh();
