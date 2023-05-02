@@ -85,7 +85,7 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
         console.log(txResponse);
         channel.appendLine(`Transaction hash : ${txResponse.transactionHash}`);
     }).catch((err: any) => {
-        console.log(err);
+        console.error(err);
         channel.appendLine(`Error : ${err}`);
     });
     channel.show(true);
