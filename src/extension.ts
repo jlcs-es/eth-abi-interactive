@@ -75,13 +75,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
   pendingTransactionTreeView.message = "Select a contract and its pending transaction will appear here.";
 
-  const contractsWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(vscode.workspace.workspaceFolders?.[0] ?? '', '**/*.json'));
-  contractsWatcher.onDidChange((uri) => {
+  api.events.contracts.event(() => {
     abiTreeDataProvider.refresh();
     contractTreeDataProvider.refresh();
     constructorTreeDataProvider.refresh();
     updateContractAddress(STATE.currentContract, abiTreeView, constructorTreeView, pendingTransactionTreeView);
   });
+
 
   // functions
   context.subscriptions.push(
