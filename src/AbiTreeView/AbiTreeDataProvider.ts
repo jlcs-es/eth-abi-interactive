@@ -43,7 +43,7 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
       for (const input of value.inputs) {
         leaves.push(
           new Abi(
-            value.stateMutability === "payable" ? "payableValue" : input.name,
+            (!input.name && value.stateMutability === "payable") ? "payableValue" : input.name,
             input,
             "abiInput",
             element,
