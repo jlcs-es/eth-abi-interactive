@@ -3,7 +3,7 @@ import { ContractTreeDataProvider, Contract as ContractTreeItem } from "./Contra
 import { AbiTreeDataProvider, Abi } from "./AbiTreeView/AbiTreeDataProvider";
 import { STATE } from "./state";
 import { PendingTransactionTreeDataProvider } from "./PendingTransactionTreeView/NodeDependenciesProvider";
-import { callContract, editInput, sendTransaction } from "./AbiTreeView/functions";
+import { callContract, create, editInput, sendTransaction } from "./AbiTreeView/functions";
 import { deployContract, editContractAddress, refreshContract, updateContractAddress, useContract } from "./ContractTreeView/functions";
 import { ConstructorTreeDataProvider } from "./ConstructorTreeView/ConstructorTreeDataProvider";
 import { editConstructorInput } from "./ConstructorTreeView/functions";
