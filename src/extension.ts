@@ -1,16 +1,19 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
 import { ContractTreeDataProvider, Contract as ContractTreeItem } from "./ContractTreeView/ContractTreeDataProvider";
 import { AbiTreeDataProvider, Abi } from "./AbiTreeView/AbiTreeDataProvider";
 import { STATE } from "./state";
 import { PendingTransactionTreeDataProvider } from "./PendingTransactionTreeView/NodeDependenciesProvider";
-// import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
-import { getSourceName } from "./utils/functions";
-import { Contract, ContractFactory, Wallet } from "ethers";
-import { callContract, create, editInput, sendTransaction } from "./AbiTreeView/functions";
+import { callContract, editInput, sendTransaction } from "./AbiTreeView/functions";
 import { deployContract, editContractAddress, refreshContract, updateContractAddress, useContract } from "./ContractTreeView/functions";
 import { ConstructorTreeDataProvider } from "./ConstructorTreeView/ConstructorTreeDataProvider";
 import { editConstructorInput } from "./ConstructorTreeView/functions";
+
+// const settings = {
+//   apiKey: "",
+//   network: Network.ETH_MAINNET,
+// };
+
+// const alchemy = new Alchemy(settings);
 
 const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
@@ -27,7 +30,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Contract Tree View
   const contractTreeDataProvider = new ContractTreeDataProvider(
-    vscode.workspace.rootPath
+    vscode.workspace.workspaceFolders?.[0].uri.fsPath
   );
 
   let contractTreeView = vscode.window.createTreeView("sol-exec.contracts", {
@@ -42,7 +45,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Abi Tree View
   const abiTreeDataProvider = new AbiTreeDataProvider(
-    vscode.workspace.rootPath
+    vscode.workspace.workspaceFolders?.[0].uri.fsPath
   );
   const abiTreeView = vscode.window.createTreeView("sol-exec.abis", {
     treeDataProvider: abiTreeDataProvider,
@@ -54,7 +57,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // constructor tree view
   const constructorTreeDataProvider = new ConstructorTreeDataProvider(
-    vscode.workspace.rootPath
+    vscode.workspace.workspaceFolders?.[0].uri.fsPath
   );
 
   const constructorTreeView = vscode.window.createTreeView("sol-exec.constructor", {
@@ -72,13 +75,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
   pendingTransactionTreeView.message = "Select a contract and its pending transaction will appear here.";
 
-  fs.watch(path_[0].uri.fsPath, { recursive: true }, (eventType, filename) => {
-    console.log(`File ${filename} has been ${eventType}`);
+  api.events.contracts.event(() => {
     abiTreeDataProvider.refresh();
     contractTreeDataProvider.refresh();
     constructorTreeDataProvider.refresh();
     updateContractAddress(STATE.currentContract, abiTreeView, constructorTreeView, pendingTransactionTreeView);
   });
+
 
   // functions
   context.subscriptions.push(

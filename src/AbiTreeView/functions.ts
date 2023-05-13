@@ -50,7 +50,7 @@ const editInput = async (input: Abi, abiTreeDataProvider: any) => {
 };
 
 const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
-    channel.appendLine(`Sending transaction ${func.abi.name} ...`);
+    channel.appendLine(`${func.abi.name}:${func.abi.stateMutability} >`);
     const functionName = func.abi.name;
     const totalArgsCount = func.children.length;
     let countArgs = 0;
@@ -70,8 +70,13 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
     // execute the selected function
     const functionArgs: any = [];
     func.children.forEach((item: Abi) => {
-        if (item.abi.value !== "") {
-            functionArgs.push(item.abi.value);
+        if(item.abi.value !== "") {
+            // check if this is payable value
+            if (!item.abi.name) {
+                functionArgs.push({ value: parseInt(item.abi.value) });
+            } else {
+                functionArgs.push(item.abi.value);
+            }
             countArgs++;
         }
         else {
@@ -84,16 +89,16 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
     }
 
     executeTransaction(contractAddress, abi, wallet, func.abi.name, functionArgs).then((txResponse: any) => {
-        console.log(txResponse);
         channel.appendLine(`Transaction hash : ${txResponse.transactionHash}`);
     }).catch((err: any) => {
-        console.log(err);
+        console.error(err);
         channel.appendLine(`Error : ${err}`);
     });
     channel.show(true);
 };
 
 const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
+    channel.appendLine(`${func.abi.name}:${func.abi.stateMutability} >`);
     const abi = await api.contract.abi(STATE.currentContract);
     const contractAddress = await api.contract.getContractAddress(STATE.currentContract);
     const functionName = func.abi.name;
@@ -101,6 +106,7 @@ const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
     let countArgs = 0;
     if (contractAddress === "") {
         channel.appendLine("No Contract available. Please deploy a contract first.");
+        channel.show(true); // show before return
         return;
     }
     const functionArgs: any = [];
@@ -116,11 +122,12 @@ const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
 
     if (countArgs !== totalArgsCount) {
         channel.appendLine(`Error : ${functionName} function's arguments are not complete`);
+        channel.show(true); // show before return
         return;
     }
 
     callContractFunction(contractAddress, abi, func.abi.name, functionArgs).then((response: any) => {
-        channel.appendLine(`Contract call result : ${response}`);
+        channel.appendLine(`${func.abi.name}:${func.abi.stateMutability} > ${response}`);
     }).catch((err: any) => {
         console.error(err);
         channel.appendLine(`Error : ${err}`);

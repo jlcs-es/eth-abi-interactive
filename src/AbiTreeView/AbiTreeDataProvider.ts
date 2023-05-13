@@ -1,32 +1,11 @@
 import { extensions, TreeDataProvider, TreeItem, TreeItemCollapsibleState, EventEmitter, Event, ThemeIcon } from 'vscode';
 import { STATE } from '../state';
-
-
-export class Abi extends TreeItem {
-  public value: any;
-  constructor(
-    public readonly label: string,
-    public readonly abi: any,
-    contextValue: string,
-    public parent: Abi | null,
-    public children: Abi[],
-    public readonly collapsibleState: TreeItemCollapsibleState
-  ) {
-    super(label, collapsibleState);
-    this.contextValue = contextValue;
-    if(abi.type === "function") {
-      this.iconPath = new ThemeIcon("symbol-method");
-    } else {
-      this.description = abi.type + " : " + abi.value;
-      this.iconPath = new ThemeIcon("symbol-parameter");
-    }
-  }
-}
+import { Abi } from './AbiTreeItem';
 
 const ethcodeExtension: any = extensions.getExtension('7finney.ethcode');
 const api: any = ethcodeExtension.exports;
 
-
+export { Abi } from './AbiTreeItem';
 export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
   constructor(private workspaceRoot: string | undefined) {}
 
@@ -42,7 +21,9 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
       
       for (const entry of abi) {
         if (entry.type === "function" ) {
-          const coll = (entry.inputs && entry.inputs.length)
+          const payableEntry = entry.stateMutability === "payable" ? Object.assign({ ...entry }, { inputs: [{ value: 0 }] }) : entry;
+          // payable entry should look like - {inputs: Array(1), name: 'store', outputs: Array(0), stateMutability: 'nonpayable', type: 'function'}
+          const colapse = (payableEntry.inputs && payableEntry.inputs.length > 0)
             ? TreeItemCollapsibleState.Expanded
             : TreeItemCollapsibleState.None;
           leaves.push(
@@ -52,7 +33,7 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
               entry.stateMutability === "view" ? "abiReadFunction" : "abiFunction",
               null,
               [],
-              coll
+              colapse
             )
           );
         }
@@ -62,7 +43,7 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
       for (const input of value.inputs) {
         leaves.push(
           new Abi(
-            input.name,
+            (!input.name && value.stateMutability === "payable") ? "payableValue" : input.name,
             input,
             "abiInput",
             element,
