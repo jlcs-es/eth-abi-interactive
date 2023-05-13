@@ -7,7 +7,7 @@ import { PendingTransactionTreeDataProvider } from "./PendingTransactionTreeView
 // import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
 import { getSourceName } from "./utils/functions";
 import { Contract, ContractFactory, Wallet } from "ethers";
-import { callContract, editInput, sendTransaction } from "./AbiTreeView/functions";
+import { callContract, create, editInput, sendTransaction } from "./AbiTreeView/functions";
 import { deployContract, editContractAddress, refreshContract, updateContractAddress, useContract } from "./ContractTreeView/functions";
 import { ConstructorTreeDataProvider } from "./ConstructorTreeView/ConstructorTreeDataProvider";
 import { editConstructorInput } from "./ConstructorTreeView/functions";
@@ -93,8 +93,9 @@ export async function activate(context: vscode.ExtensionContext) {
       callContract(func, channel);
     }),
     // under development
-    vscode.commands.registerCommand('sol-exec.createTransaction', () => {
-      channel.appendLine(`Create Transaction ...`);
+    vscode.commands.registerCommand('sol-exec.createTransaction', async (func: Abi) => {
+      console.log(func);
+      await create(func, channel);
     }),
     // contract 
     vscode.commands.registerCommand("sol-exec.useContract", async (node: ContractTreeItem) => {
