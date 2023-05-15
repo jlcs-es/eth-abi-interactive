@@ -31,7 +31,6 @@ async function callContractFunction(contractAddress: string, abi: any[], functio
     return result;
 }
 
-
 const editInput = async (input: Abi, abiTreeDataProvider: any) => {
     let filePath = "";
     const path = await vscode.workspace.findFiles(`**/${STATE.currentContract}_functions_input.json`);
@@ -70,7 +69,7 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
     // execute the selected function
     const functionArgs: any = [];
     func.children.forEach((item: Abi) => {
-        if(item.abi.value !== "") {
+        if (item.abi.value !== "") {
             // check if this is payable value
             if (!item.abi.name) {
                 functionArgs.push({ value: parseInt(item.abi.value) });
@@ -219,53 +218,25 @@ const createTransactionObject = async (func: Abi, channel: vscode.OutputChannel)
     } catch (error) {
         console.error(error);
     }
-};  
-
-const mainFolder = async () => {
-    try {
-        // const folderPath = path.join(__dirname, `artifacts\\contracts\\${STATE.currentContract}.sol` , 'sol-exec');
-        // get folder pat of artifacts\\contracts\\${STATE.currentContract}.sol folder using vs code api
-        if (!vscode.workspace.workspaceFolders) {
-            vscode.window.showErrorMessage('Please open a folder first to use this command.');
-            return;
-        }
-        let mainpath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-        mainpath = path.join(mainpath, 'artifacts', 'sol-exec');
-        console.log(mainpath);
-        if (!fs.existsSync(mainpath)) {
-            fs.mkdirSync(mainpath);
-            mainpath = path.join(mainpath,`${STATE.currentContract}`);
-            if (!fs.existsSync(mainpath)) {
-                fs.mkdirSync(mainpath);
-                console.log('Folder created successfully');
-            }
-        } else {
-            console.log('Folder already exists');
-        }
-        return mainpath;
-        // if (!fs.existsSync(folderPath)) {
-        //     fs.mkdirSync(folderPath);
-        //     console.log('Folder created successfully');
-        // } else {
-        //     console.log('Folder already exists');
-        // }
-        // return folderPath;
-    } catch (error: any) {
-        if (error.reason === undefined) {
-            console.log(`Error: ${error.message}`);
-        } else {
-            console.log(`Error: ${error.reason}`);
-        }
-    }
 };
+
+const createDirectoryIfNotExists = (path: string): void => {
+    if (!fs.existsSync(path)) {
+        fs.mkdirSync(path, { recursive: true });
+        console.log(`Directory '${path}' created.`);
+    } else {
+        console.log(`Directory '${path}' already exists.`);
+    }
+}
 
 const checkFolder = async (folderName: any) => {
     try {
-        const mainFolderPath: any = await mainFolder();
-        const folderPath = path.join(mainFolderPath, folderName);
-        if (!fs.existsSync(folderPath)) {
-            fs.mkdirSync(folderPath);
+        const basePath =  vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+        if (basePath === undefined) {
+            throw new Error("No workspace folder found");
         }
+        const folderPath = path.join( basePath, `artifacts\\sol-exec\\${STATE.currentContract}.sol`, folderName);
+        createDirectoryIfNotExists(folderPath);
         return folderPath;
     } catch (error: any) {
         if (error.reason === undefined) {
@@ -296,9 +267,9 @@ const writeTransaction = async (tx: any, functionName: any) => {
 
 const create = async (func: Abi, channel: vscode.OutputChannel) => {
     channel.appendLine(`Creating transaction ${func.abi.name} ...`);
-    const tx = await createTransactionObject(func,channel);
+    const tx = await createTransactionObject(func, channel);
     console.log(tx);
-    const path = await writeTransaction(tx,func.abi.name);
+    const path = await writeTransaction(tx, func.abi.name);
     console.log(path);
     channel.appendLine(`Transaction created successfully : ${path}`);
 };
