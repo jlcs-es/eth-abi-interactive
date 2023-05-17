@@ -30,7 +30,7 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
             new Abi(
               entry.name,
               entry,
-              entry.stateMutability === "view" ? "abiReadFunction" : "abiFunction",
+              entry.stateMutability === "view" || entry.stateMutability === "pure" ? "abiReadFunction" : "abiFunction",
               null,
               [],
               colapse
