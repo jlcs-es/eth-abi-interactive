@@ -5,7 +5,7 @@ import * as fs from "fs";
 import { Contract, Wallet, ethers } from "ethers";
 import { Signer } from "@ethersproject/abstract-signer";
 import path from "path";
-
+import { read } from "../PendingTransactionTreeView/functions";
 const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
 
@@ -227,15 +227,15 @@ const createDirectoryIfNotExists = (path: string): void => {
     } else {
         console.log(`Directory '${path}' already exists.`);
     }
-}
+};
 
 const checkFolder = async (folderName: any) => {
     try {
-        const basePath =  vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+        const basePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
         if (basePath === undefined) {
             throw new Error("No workspace folder found");
         }
-        const folderPath = path.join( basePath, `artifacts\\sol-exec\\${STATE.currentContract}.sol`, folderName);
+        const folderPath = path.join(basePath, `artifacts\\sol-exec\\${STATE.currentContract}.sol`, folderName);
         createDirectoryIfNotExists(folderPath);
         return folderPath;
     } catch (error: any) {
@@ -265,13 +265,15 @@ const writeTransaction = async (tx: any, functionName: any) => {
     }
 };
 
-const create = async (func: Abi, channel: vscode.OutputChannel) => {
+const create = async (func: Abi, channel: vscode.OutputChannel, pendingTransactionDataProvider: any) => {
     channel.appendLine(`Creating transaction ${func.abi.name} ...`);
     const tx = await createTransactionObject(func, channel);
     console.log(tx);
     const path = await writeTransaction(tx, func.abi.name);
     console.log(path);
     channel.appendLine(`Transaction created successfully : ${path}`);
+    console.log('-------------------------------------------------read-------------------------------------------------');
+    await read();
 };
 
 export {
