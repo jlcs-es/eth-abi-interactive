@@ -274,6 +274,7 @@ const create = async (func: Abi, channel: vscode.OutputChannel, pendingTransacti
     channel.appendLine(`Transaction created successfully : ${path}`);
     console.log('-------------------------------------------------read-------------------------------------------------');
     await read();
+    return;
 };
 
 export {

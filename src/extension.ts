@@ -7,7 +7,9 @@ import { callContract, create, editInput, sendTransaction } from "./AbiTreeView/
 import { deployContract, editContractAddress, refreshContract, updateContractAddress, useContract } from "./ContractTreeView/functions";
 import { ConstructorTreeDataProvider } from "./ConstructorTreeView/ConstructorTreeDataProvider";
 import { editConstructorInput } from "./ConstructorTreeView/functions";
-
+// import { read } from "./PendingTransactionTreeView/functions";
+import fs from 'fs';
+import path from 'path';
 // const settings = {
 //   apiKey: "",
 //   network: Network.ETH_MAINNET,
@@ -98,7 +100,9 @@ export async function activate(context: vscode.ExtensionContext) {
     // under development
     vscode.commands.registerCommand('sol-exec.createTransaction', async (func: Abi) => {
       console.log(func);
-      await create(func, channel);
+
+      await create(func, channel, pendingTransactionTreeView);
+      
     }),
     // contract 
     vscode.commands.registerCommand("sol-exec.useContract", async (node: ContractTreeItem) => {

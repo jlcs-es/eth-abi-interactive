@@ -55,6 +55,7 @@ const read = async () => {
     console.log(jsonObject);
     // write to file
     fs.writeFileSync(`${path.join(basePath, `artifacts\\sol-exec`)}/readTransaction.json`, JSON.stringify(jsonObject, null, 4));
+    return jsonObject;
 };
 export {
     read,
