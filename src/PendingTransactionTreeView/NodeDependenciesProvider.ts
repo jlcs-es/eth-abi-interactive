@@ -1,118 +1,3 @@
-// import * as vscode from 'vscode';
-// // import { PendingTransaction } from './PendingTransactionItems';
-// import {
-//   FunctionName,
-//   TransactionID,
-//   DecodedTransaction,
-//   DecodedTransactionID,
-//   SimulatedTransaction,
-//   SimulatedTransactionID,
-
-// }
-//   from './PendingTransactionItems';
-
-// import * as fs from 'fs';
-// import * as path from 'path';
-
-// export class PendingTransactionTreeDataProvider implements vscode.TreeDataProvider<FunctionName> {
-
-//   onDidChangeTreeData?: vscode.Event<void | FunctionName | FunctionName[] | null | undefined> | undefined;
-
-//   getTreeItem(element: FunctionName): vscode.TreeItem {
-//     return element;
-//   }
-
-
-//   async getDecodedTransactionIDTreeView(element: any): Promise<DecodedTransaction> {
-//     console.log('-------------------------------------------------getDecodedTransactionIDTreeView-------------------------------------------------');
-//     console.log(element);
-//     var decodedTransaction: DecodedTransaction = new DecodedTransaction(
-//       "Decoded",
-//       element,
-//       [],
-//       vscode.TreeItemCollapsibleState.Collapsed,
-//     );
-//     return decodedTransaction;
-//   }
-
-//   async getSimpulatedTransactionIDTreeView(element: any): Promise<SimulatedTransaction> {
-//     console.log('-------------------------------------------------getDecodedTransactionIDTreeView-------------------------------------------------');
-//     console.log(element);
-//     var simulatedTransaction: SimulatedTransaction = new SimulatedTransaction(
-//       "Simulated",
-//       element,
-//       [],
-//       vscode.TreeItemCollapsibleState.Collapsed,
-//     );
-//     return simulatedTransaction;
-//   }
-
-//   async getTransactionIDTreeView(element: any): Promise<TransactionID[]> {
-//     console.log('-------------------------------------------------getTransactionIDTreeItem-------------------------------------------------');
-//     console.log(element);
-//     var transactionIDs: TransactionID[] = [];
-//     for (const transactionID in element) {
-//       console.log('-------------------------------------------------transactionID-------------------------------------------------');
-//       console.log(transactionID);
-//       var decodedTransaction: DecodedTransaction = await this.getDecodedTransactionIDTreeView(element[transactionID]);
-//       var simulatedTransaction: SimulatedTransaction = await this.getSimpulatedTransactionIDTreeView(element[transactionID]);
-
-//       transactionIDs.push(
-//         new TransactionID(
-//           transactionID,
-//           element[transactionID].path,
-//           element,
-//           [decodedTransaction, simulatedTransaction],
-//           vscode.TreeItemCollapsibleState.None,
-//         )
-//       );
-//     }
-//     return transactionIDs;
-//   }
-
-//   async generatePendingTransactionTreeView(): Promise<FunctionName[]> {
-//     console.log('-------------------------------------------------generatePendingTransactionTreeView-------------------------------------------------');
-//     var pendingTransactions: FunctionName[] = [];
-//     const basePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-//     if (basePath === undefined) {
-//       throw new Error("No workspace folder found");
-//     }
-//     const readTransactionPath = `${path.join(basePath, `artifacts\\sol-exec\\readTransaction.json`)}`;
-//     const readTransaction = fs.readFileSync(readTransactionPath);
-//     const data = JSON.parse(readTransaction.toString());
-//     console.log('-------------------------------------------------data-------------------------------------------------');
-//     console.log(data);
-//     for (const functionName in data) {
-//       console.log('-------------------------------------------------functionName-------------------------------------------------');
-//       console.log(functionName);
-//       var transacionIDs: TransactionID[] = await this.getTransactionIDTreeView(data[functionName]);
-//       pendingTransactions.push(
-//         new FunctionName(
-//           functionName,
-//           null,
-//           transacionIDs,
-//           vscode.TreeItemCollapsibleState.Collapsed,
-//         )
-//       );
-//     }
-//     console.log('-------------------------------------------------pendingTransactions-------------------------------------------------');
-//     console.log(pendingTransactions);
-//     return pendingTransactions;
-//   }
-
-//   async getChildren(element?: FunctionName): Promise<FunctionName[]> {
-//     console.log('-------------------------------------------------getChildren-------------------------------------------------');
-//     const pendingTransactions: FunctionName[] | undefined = await this.generatePendingTransactionTreeView();
-//     return pendingTransactions;
-//   }
-
-//   private _onDidChangeTreeData: vscode.EventEmitter<FunctionName | undefined> = new vscode.EventEmitter<FunctionName | undefined>();
-//   // readonly onDidChangeTreeData: vscode.Event<FunctionName | undefined> = this._onDidChangeTreeData.event;
-//   refresh(item?: FunctionName): void {
-//     this._onDidChangeTreeData.fire(item);
-//     console.log("refreshed tree view");
-//   }
-// }
 
 
 import * as vscode from 'vscode';
@@ -120,83 +5,105 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { read } from './functions';
 
+
+function readJson() {
+  return read();
+}
+
 class FunctionName extends vscode.TreeItem {
   contextValue: string;
   constructor(
-    public readonly label: string,
-    public readonly children: vscode.TreeItem[] | null,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState
+    public functionName: string,
+    public childern: Transaction[] | null
   ) {
-    super(label, collapsibleState);
+    super(functionName, vscode.TreeItemCollapsibleState.Collapsed);
+    this.functionName = functionName;
+    this.childern = childern;
     this.contextValue = "FunctionName";
-    this.iconPath = new vscode.ThemeIcon("symbol-parameter");
+    this.iconPath = new vscode.ThemeIcon("symbol-method");
   }
 }
 
+class Transaction extends vscode.TreeItem {
+  contextValue: string;
+  constructor(
+    public transactionName: string,
+    public path: string,
+    public parent: FunctionName | SubClass,
+    public childern: SubClass[] | null,
+    public context: string
+  ) {
+    super(transactionName, vscode.TreeItemCollapsibleState.Collapsed);
+    this.transactionName = transactionName;
+    this.path = path;
+    this.parent = parent;
+    this.childern = childern;
+    this.contextValue = context;
+  }
+}
+class SubClass extends vscode.TreeItem {
+  constructor(
+    public subClassName: string,
+    public parent: Transaction,
+    public childern: Transaction[] | null
+  ) {
+    super(subClassName, vscode.TreeItemCollapsibleState.Collapsed);
+    this.subClassName = subClassName;
+    this.parent = parent;
+    this.childern = childern;
+  }
+}
+
+async function createTreeView() {
+  const treeView =await readJson();
+  var treeViewArray = [];
+  for (const functionName in treeView) {
+      var functionObject = new FunctionName(functionName,[]);
+      for (const transactionName in treeView[functionName]) {
+          var transactionObject = new Transaction(transactionName,treeView[functionName][transactionName].path,functionObject,[],"Transaction");
+          var decodedTransactionObject = new SubClass("Decoded",transactionObject,[]);
+          var simulatedTransactionObject = new SubClass("Simulated",transactionObject,[]);
+          for (const decodedTransactionName in treeView[functionName][transactionName].decoded) {
+              var decodedObject = new Transaction(decodedTransactionName,treeView[functionName][transactionName].decoded[decodedTransactionName].path,decodedTransactionObject,null,"DecodedTransaction");
+              decodedTransactionObject.childern?.push(decodedObject);
+          }
+          for (const simulatedTransactionName in treeView[functionName][transactionName].simulated) {
+              var simulatedObject = new Transaction(simulatedTransactionName,treeView[functionName][transactionName].simulated[simulatedTransactionName].path,simulatedTransactionObject,null,"SimulatedTransaction");
+              simulatedTransactionObject.childern?.push(simulatedObject);
+          }
+          transactionObject.childern?.push(simulatedTransactionObject);
+          transactionObject.childern?.push(decodedTransactionObject);
+          functionObject.childern?.push(transactionObject);
+      }
+      treeViewArray.push(functionObject);
+  }
+  return treeViewArray;
+}
+
+console.log(readJson());
+
+console.log(createTreeView());
+
 export class PendingTransactionTreeDataProvider implements vscode.TreeDataProvider<FunctionName> {
-  private transactions: any = {};
-  private onDidChangeTreeDataEmitter: vscode.EventEmitter<FunctionName | undefined> = new vscode.EventEmitter<FunctionName | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<FunctionName | undefined> = this.onDidChangeTreeDataEmitter.event;
-  public pendingTransactions: FunctionName[] = [];
-  constructor() {
-    this.loadTransactions();
+  private _onDidChangeTreeData: vscode.EventEmitter<FunctionName | undefined | null> = new vscode.EventEmitter<FunctionName | undefined | null>();
+  readonly onDidChangeTreeData: vscode.Event<FunctionName | undefined | null> = this._onDidChangeTreeData.event;
+
+  public leaves : FunctionName[] = [];
+  getTreeItem(element: FunctionName): vscode.TreeItem {
+      return element;
   }
 
-  private async loadTransactions() {
-    this.transactions = await read();
+  async getChildren(element?: FunctionName): Promise<FunctionName[]> {
+      this.leaves = await createTreeView();
+      console.log(this.leaves);
+      return this.leaves;
   }
 
   refresh(): void {
-    this.loadTransactions();
-    this.onDidChangeTreeDataEmitter.fire(undefined);
-  }
+      this._onDidChangeTreeData.fire(undefined);
 
-  getTreeItem(element: FunctionName): FunctionName {
-    return element;
-  }
-
-  getChildren(element?: FunctionName): FunctionName[] {
-    console.log('-------------------------------------------------getChildren-------------------------------------------------');
-    console.log(element);
-
-    for (const functionName in this.transactions) {
-      console.log('-------------------------------------------------functionName-------------------------------------------------');
-      console.log(functionName);
-      for (const transactionID in this.transactions[functionName]) {
-        console.log('-------------------------------------------------transactionID-------------------------------------------------');
-        console.log(transactionID);
-        console.log(this.transactions[functionName][transactionID].path);
-        for (const decodedTransaction in this.transactions[functionName][transactionID].decoded) {
-          console.log('-------------------------------------------------decodedTransaction-------------------------------------------------');
-          console.log(decodedTransaction);
-          console.log(this.transactions[functionName][transactionID].decoded[decodedTransaction].path);
-        }
-        for (const simulatedTransaction in this.transactions[functionName][transactionID].simulated) {
-          console.log('-------------------------------------------------simulatedTransaction-------------------------------------------------');
-          console.log(simulatedTransaction);
-          console.log(this.transactions[functionName][transactionID].simulated[simulatedTransaction].path);
-        }
-      }
-      // create a new function name
-      var functionNameTreeElement: FunctionName = new FunctionName(
-        functionName,
-        [
-          new vscode.TreeItem(
-            "TransactionID",
-            vscode.TreeItemCollapsibleState.None,
-          ),
-        ],
-        vscode.TreeItemCollapsibleState.Collapsed,
-      );
-      // push the function name to the pending transactions
-      this.pendingTransactions.push(functionNameTreeElement);
-    }
-    console.log('-------------------------------------------------pendingTransactions-------------------------------------------------');
-    console.log(this.pendingTransactions);
-    return this.pendingTransactions;
   }
 }
-
 
 
 
