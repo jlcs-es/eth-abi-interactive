@@ -56,7 +56,7 @@ const useContract = async (
     } else {
         constructorTreeView.message = undefined;
     }
-    pendingTransactionDataProvider.refresh();
+    await pendingTransactionDataProvider.refresh();
     pendingTransactionTreeView.message = undefined;
     STATE.flag = true;
     await read();

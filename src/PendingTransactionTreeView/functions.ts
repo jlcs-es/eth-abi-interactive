@@ -7,12 +7,12 @@ function createJsonObject(directoryPath: any) {
     const jsonObject: any = {};
 
     fs.readdirSync(directoryPath).forEach((functionName) => {
-        const functionPath = `${directoryPath}\\${functionName}`;
+        const functionPath = path.join(`${directoryPath}`,`${functionName}`);
 
         jsonObject[functionName] = {};
 
         fs.readdirSync(functionPath).forEach((fileName) => {
-            const filePath = `${functionPath}\\${fileName}`;
+            const filePath = path.join(`${functionPath}`,`${fileName}`);
             const fileContent = fs.readFileSync(filePath);
             const data = JSON.parse(fileContent.toString());
             console.log(filePath);

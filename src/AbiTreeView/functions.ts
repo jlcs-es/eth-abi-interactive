@@ -254,8 +254,8 @@ const writeTransaction = async (tx: any, functionName: any) => {
         // const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(JSON.stringify(tx)));
         const epochTime = Date.now();
         console.log(epochTime);
-        fs.writeFileSync(`${folderPath}\\${epochTime}_tx.json`, JSON.stringify(tx));
-        return `${folderPath}\\${epochTime}_tx.json`;
+        fs.writeFileSync(`${path.join(`${folderPath}`,`${epochTime}_tx.json`)}`, JSON.stringify(tx));
+        return `${path.join(`${folderPath}`,`${epochTime}_tx.json`)}`;
     } catch (error: any) {
         if (error.reason === undefined) {
             console.log(`Error: ${error.message}`);
@@ -265,14 +265,14 @@ const writeTransaction = async (tx: any, functionName: any) => {
     }
 };
 
-const create = async (func: Abi, channel: vscode.OutputChannel, pendingTransactionDataProvider: any) => {
+const create = async (func: Abi, channel: vscode.OutputChannel, pendingTransactionTreeView: any) => {
     channel.appendLine(`Creating transaction ${func.abi.name} ...`);
     const tx = await createTransactionObject(func, channel);
     console.log(tx);
     const path = await writeTransaction(tx, func.abi.name);
     console.log(path);
     channel.appendLine(`Transaction created successfully : ${path}`);
-    pendingTransactionDataProvider.refresh();
+    await pendingTransactionTreeView.refresh();
     console.log('-------------------------------------------------read-------------------------------------------------');
     await read();
     return;

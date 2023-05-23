@@ -99,9 +99,11 @@ export class PendingTransactionTreeDataProvider implements vscode.TreeDataProvid
       return this.leaves;
   }
 
-  refresh(): void {
+  async refresh(): Promise<void> {
       this._onDidChangeTreeData.fire(undefined);
-
+      this.leaves = await createTreeView();
+      console.log(this.leaves);
+      return ;
   }
 }
 
