@@ -235,7 +235,7 @@ const checkFolder = async (folderName: any) => {
         if (basePath === undefined) {
             throw new Error("No workspace folder found");
         }
-        const folderPath = path.join(basePath, `artifacts\\sol-exec\\${STATE.currentContract}.sol`, folderName);
+        const folderPath = path.join(basePath, `artifacts`,`sol-exec`,`${STATE.currentContract}.sol`, folderName);
         createDirectoryIfNotExists(folderPath);
         return folderPath;
     } catch (error: any) {
@@ -272,6 +272,7 @@ const create = async (func: Abi, channel: vscode.OutputChannel, pendingTransacti
     const path = await writeTransaction(tx, func.abi.name);
     console.log(path);
     channel.appendLine(`Transaction created successfully : ${path}`);
+    pendingTransactionDataProvider.refresh();
     console.log('-------------------------------------------------read-------------------------------------------------');
     await read();
     return;

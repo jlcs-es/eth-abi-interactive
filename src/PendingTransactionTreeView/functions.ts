@@ -44,7 +44,7 @@ const read = async () => {
     if (basePath === undefined) {
         throw new Error("No workspace folder found");
     }
-    const folderPath = path.join(basePath, `artifacts\\sol-exec\\${STATE.currentContract}.sol`);
+    const folderPath = path.join(basePath, `artifacts`,`sol-exec`,`${STATE.currentContract}.sol`);
     // if path does not exist console error
     if (!fs.existsSync(folderPath)) {
         console.log("-------------------------------------------------folderPath does not exist-------------------------------------------------");
@@ -54,7 +54,7 @@ const read = async () => {
     console.log('-------------------------------------------------jsonObject-------------------------------------------------');
     console.log(jsonObject);
     // write to file
-    fs.writeFileSync(`${path.join(basePath, `artifacts\\sol-exec`)}/readTransaction.json`, JSON.stringify(jsonObject, null, 4));
+    fs.writeFileSync(`${path.join(basePath, `artifacts`,`sol-exec`,`readTransaction.json`)}`, JSON.stringify(jsonObject, null, 4));
     return jsonObject;
 };
 export {
