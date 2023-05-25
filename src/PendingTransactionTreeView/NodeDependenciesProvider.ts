@@ -56,8 +56,10 @@ class SubClass extends vscode.TreeItem {
 
 async function createTreeView() {
   const treeView =await readJson();
-  var treeViewArray = [];
-  for (const functionName in treeView) {
+  console.log('treeView ------>>>>', treeView);
+  var treeViewArray: Array<FunctionName> = [];
+  if(Object.keys(treeView).length > 0) {
+    Object.keys(treeView).map((functionName) => {
       var functionObject = new FunctionName(functionName,[]);
       for (const transactionName in treeView[functionName]) {
           var transactionObject = new Transaction(transactionName,treeView[functionName][transactionName].path,functionObject,[],"Transaction");
@@ -76,7 +78,28 @@ async function createTreeView() {
           functionObject.childern?.push(transactionObject);
       }
       treeViewArray.push(functionObject);
+    });
   }
+  // for (const functionName in treeView) {
+  //     var functionObject = new FunctionName(functionName,[]);
+  //     for (const transactionName in treeView[functionName]) {
+  //         var transactionObject = new Transaction(transactionName,treeView[functionName][transactionName].path,functionObject,[],"Transaction");
+  //         var decodedTransactionObject = new SubClass("Decoded",transactionObject,[]);
+  //         var simulatedTransactionObject = new SubClass("Simulated",transactionObject,[]);
+  //         for (const decodedTransactionName in treeView[functionName][transactionName].decoded) {
+  //             var decodedObject = new Transaction(decodedTransactionName,treeView[functionName][transactionName].decoded[decodedTransactionName].path,decodedTransactionObject,null,"DecodedTransaction");
+  //             decodedTransactionObject.childern?.push(decodedObject);
+  //         }
+  //         for (const simulatedTransactionName in treeView[functionName][transactionName].simulated) {
+  //             var simulatedObject = new Transaction(simulatedTransactionName,treeView[functionName][transactionName].simulated[simulatedTransactionName].path,simulatedTransactionObject,null,"SimulatedTransaction");
+  //             simulatedTransactionObject.childern?.push(simulatedObject);
+  //         }
+  //         transactionObject.childern?.push(simulatedTransactionObject);
+  //         transactionObject.childern?.push(decodedTransactionObject);
+  //         functionObject.childern?.push(transactionObject);
+  //     }
+  //     treeViewArray.push(functionObject);
+  // }
   return treeViewArray;
 }
 
