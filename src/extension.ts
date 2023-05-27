@@ -10,6 +10,7 @@ import { editConstructorInput } from "./ConstructorTreeView/functions";
 // import { read } from "./PendingTransactionTreeView/functions";
 import fs from 'fs';
 import path from 'path';
+import { editTransactionJson } from "./PendingTransactionTreeView/functions";
 // const settings = {
 //   apiKey: "",
 //   network: Network.ETH_MAINNET,
@@ -97,10 +98,8 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('sol-exec.callContract', async (func: Abi) => {
       callContract(func, channel);
     }),
-    // under development
     vscode.commands.registerCommand('sol-exec.createTransaction', async (func: Abi) => {
       console.log(func);
-
       await create(func, channel, pendingTransactionTreeView);
       
     }),
@@ -137,9 +136,10 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("sol-exec.decode", async (input: any) => {
       channel.appendLine(`Decoding transaction ...`);
     }),
-    // under development
     vscode.commands.registerCommand("sol-exec.edit", async (input: any) => {
       channel.appendLine(`Editing transaction ...`);
+      editTransactionJson(input);
+      console.log(input);
     }),
     // under development
     vscode.commands.registerCommand("sol-exec.send", async (input: any) => {

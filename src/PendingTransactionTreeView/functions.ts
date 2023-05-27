@@ -57,6 +57,15 @@ const read = async () => {
     fs.writeFileSync(`${path.join(basePath, `artifacts`,`sol-exec`,`readTransaction.json`)}`, JSON.stringify(jsonObject, null, 4));
     return jsonObject;
 };
+
+const editTransactionJson = async (input: any) => {
+    const document = await vscode.workspace.openTextDocument(input.path);
+    const editor = await vscode.window.showTextDocument(document);
+    editor.revealRange(new vscode.Range(0, 0, 0, 0));
+}
+
 export {
     read,
+    editTransactionJson
+    
 };
