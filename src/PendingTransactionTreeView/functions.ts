@@ -91,7 +91,7 @@ const sendTransactionJson = async (input: any, channel: vscode.OutputChannel) =>
     });
 };
 
-const decode = async (input: any,channel: vscode.OutputChannel) => {
+const decode = async (input: any, channel: vscode.OutputChannel) => {
     try {
         const fileContents = fs.readFileSync(input.path, 'utf-8');
         const data = JSON.parse(fileContents);
@@ -112,7 +112,6 @@ const decode = async (input: any,channel: vscode.OutputChannel) => {
     }
 };
 
-
 const writeDecodedTransaction = async (decodedTransaction: any, input: any) => {
     try {
         console.log(typeof decodedTransaction);
@@ -124,20 +123,42 @@ const writeDecodedTransaction = async (decodedTransaction: any, input: any) => {
             result: decodedTransaction,
         };
         fs.writeFileSync(
-            `${folderPath}\\${epochTime}_decoded_tx.json`,
+            path.join(`${folderPath}`, `${epochTime}_decoded_tx.json`),
             JSON.stringify(decodedTx),
         );
-        return `${folderPath}\\${epochTime}_decoded_tx.json`;
+        return path.join(`${folderPath}`, `${epochTime}_decoded_tx.json`);
     } catch (error: any) {
         if (error.reason === undefined) {
-             console.log(`Error: ${error.message}`);
+            console.log(`Error: ${error.message}`);
         } else {
-             console.log(`Error: ${error.reason}`);
+            console.log(`Error: ${error.reason}`);
         }
     }
-}
-
-const decodeTransactionJson = async (input: any , channel: vscode.OutputChannel) => {
+};
+const writeSimulatedTransaction = async (simulatedTransaction: any, input: any) => {
+    try {
+        console.log(typeof simulatedTransaction);
+        const folderPath = await checkFolder(`${input.parent.functionName}`);
+        const epochTime = Date.now();
+        console.log(epochTime);
+        const decodedTx = {
+            transactionName: `${input.parent.functionName}|${input.label}`,
+            result: simulatedTransaction,
+        };
+        fs.writeFileSync(
+            path.join(`${folderPath}`, `${epochTime}_simulated_tx.json`),
+            JSON.stringify(decodedTx),
+        );
+        return path.join(`${folderPath}`, `${epochTime}_simulated_tx.json`);
+    } catch (error: any) {
+        if (error.reason === undefined) {
+            console.log(`Error: ${error.message}`);
+        } else {
+            console.log(`Error: ${error.reason}`);
+        }
+    }
+};
+const decodeTransactionJson = async (input: any, channel: vscode.OutputChannel) => {
     try {
         console.log(input);
         const decodedData = await decode(input, channel);
@@ -156,11 +177,61 @@ const decodeTransactionJson = async (input: any , channel: vscode.OutputChannel)
     }
 };
 
+const simulate = async (input: any, channel: vscode.OutputChannel) => {
+    try {
+        const wallet: any = await api.wallet.get();
+        console.log("Wallet address : ", wallet.address);
+        const provider = await api.provider.get();
+        // read file
+        const transaction = fs.readFileSync(input.path);
+        const txObject = JSON.parse(transaction.toString());
+        console.log(txObject);
+        txObject.gasPrice = ethers.BigNumber.from(txObject.gasPrice.hex);
+        txObject.gasLimit = ethers.BigNumber.from(txObject.gasLimit.hex);
+        txObject.value = ethers.BigNumber.from(txObject.value.hex);
+        txObject.nonce = await wallet.getTransactionCount();
+        const chainId = await provider.getNetwork();
+        txObject.chainId = chainId.chainId;
+        console.log(txObject);
+        const signedTx = await wallet.signTransaction(txObject);
+        const txResponse = await provider.sendTransaction(signedTx);
+        return txResponse;
+    } catch (error: any) {
+        if (error.reason === undefined) {
+            channel.appendLine(`Error: ${error.message}`);
+            console.log(`Error: ${error}`);
+        } else {
+            channel.appendLine(`Error: ${error.reason}`);
+            console.log(`Error: ${error}`);
+        }
+    }
+};
+
+const simulateTransactionJson = async (input: any, channel: vscode.OutputChannel) => {
+    try {
+        console.log(input);
+        const simulatedData = await simulate(input, channel);
+        console.log(simulatedData);
+        const simulatedTxPath = await writeSimulatedTransaction(simulatedData, input);
+        console.log(simulatedTxPath);
+        channel.appendLine(`Simulated transaction path: ${simulatedTxPath}`);
+    } catch (error: any) {
+        if (error.reason === undefined) {
+            channel.appendLine(`Error: ${error.message}`);
+            console.log(`Error: ${error}`);
+        } else {
+            channel.appendLine(`Error: ${error.reason}`);
+            console.log(`Error: ${error}`);
+        }
+    }
+};
+
 export {
     read,
     editTransactionJson,
     deleteTransactionJson,
     sendTransactionJson,
-    decodeTransactionJson
+    decodeTransactionJson,
+    simulateTransactionJson
 
 };

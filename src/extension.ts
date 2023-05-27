@@ -10,7 +10,7 @@ import { editConstructorInput } from "./ConstructorTreeView/functions";
 // import { read } from "./PendingTransactionTreeView/functions";
 import fs from 'fs';
 import path from 'path';
-import { decodeTransactionJson, deleteTransactionJson, editTransactionJson, sendTransactionJson } from "./PendingTransactionTreeView/functions";
+import { decodeTransactionJson, deleteTransactionJson, editTransactionJson, sendTransactionJson, simulateTransactionJson } from "./PendingTransactionTreeView/functions";
 import { send } from "process";
 // const settings = {
 //   apiKey: "",
@@ -129,14 +129,15 @@ export async function activate(context: vscode.ExtensionContext) {
       editConstructorInput(input, constructorTreeDataProvider);
     }),
     // pending transaction 
-    // under development
     vscode.commands.registerCommand("sol-exec.simulate", async (input: any) => {
       channel.appendLine(`Simulating transaction ...`);
+      await simulateTransactionJson(input,channel);
+      console.log(input);
     }),
-    // under development
     vscode.commands.registerCommand("sol-exec.decode", async (input: any) => {
       channel.appendLine(`Decoding transaction ...`);
       await decodeTransactionJson(input,channel);
+      console.log(input);
     }),
     vscode.commands.registerCommand("sol-exec.edit", async (input: any) => {
       channel.appendLine(`Editing transaction ...`);
