@@ -194,7 +194,7 @@
         },
         {
           "command": "sol-exec.delete",
-          "when": "view == sol-exec.pendingTxn && viewItem == pendingTransaction",
+          "when": "view == sol-exec.pendingTxn && (viewItem == Transaction || viewItem == DecodedTransaction || viewItem == SimulatedTransaction )",
           "group": "inline"
         }
       ]

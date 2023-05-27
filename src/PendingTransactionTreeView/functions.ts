@@ -62,10 +62,16 @@ const editTransactionJson = async (input: any) => {
     const document = await vscode.workspace.openTextDocument(input.path);
     const editor = await vscode.window.showTextDocument(document);
     editor.revealRange(new vscode.Range(0, 0, 0, 0));
-}
+};
 
+const deleteTransactionJson = (input: any) => {
+    // delete file
+    fs.unlinkSync(input.path);
+    console.log('-------------------------------------------------deleteTransactionJson-------------------------------------------------');
+};
 export {
     read,
-    editTransactionJson
+    editTransactionJson,
+    deleteTransactionJson
     
 };
