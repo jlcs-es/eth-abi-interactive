@@ -282,5 +282,6 @@ export {
     editInput,
     sendTransaction,
     callContract,
-    create
+    create,
+    checkFolder
 };

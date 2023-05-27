@@ -33,7 +33,10 @@ class Transaction extends vscode.TreeItem {
     public childern: SubClass[] | null,
     public context: string
   ) {
-    super(transactionName, vscode.TreeItemCollapsibleState.Collapsed);
+    super(
+      transactionName, 
+      (context === "Transaction" ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None)
+    );
     this.transactionName = transactionName;
     this.path = path;
     this.parent = parent;
@@ -58,24 +61,24 @@ async function createTreeView() {
   const treeData = await readJson();
   console.log('treeView ------>>>>', treeData);
   var treeViewArray: Array<FunctionName> = [];
-  if(Object.keys(treeData).length > 0) {
+  if (Object.keys(treeData).length > 0) {
     Object.keys(treeData).map((functionName) => {
-      var functionObject = new FunctionName(functionName,[]);
+      var functionObject = new FunctionName(functionName, []);
       for (const transactionName in treeData[functionName]) {
-          var transactionObject = new Transaction(transactionName,treeData[functionName][transactionName].path,functionObject,[],"Transaction");
-          var decodedTransactionObject = new SubClass("Decoded",transactionObject,[]);
-          var simulatedTransactionObject = new SubClass("Simulated",transactionObject,[]);
-          for (const decodedTransactionName in treeData[functionName][transactionName].decoded) {
-              var decodedObject = new Transaction(decodedTransactionName,treeData[functionName][transactionName].decoded[decodedTransactionName].path,decodedTransactionObject,null,"DecodedTransaction");
-              decodedTransactionObject.childern?.push(decodedObject);
-          }
-          for (const simulatedTransactionName in treeData[functionName][transactionName].simulated) {
-              var simulatedObject = new Transaction(simulatedTransactionName,treeData[functionName][transactionName].simulated[simulatedTransactionName].path,simulatedTransactionObject,null,"SimulatedTransaction");
-              simulatedTransactionObject.childern?.push(simulatedObject);
-          }
-          transactionObject.childern?.push(simulatedTransactionObject);
-          transactionObject.childern?.push(decodedTransactionObject);
-          functionObject.childern?.push(transactionObject);
+        var transactionObject = new Transaction(transactionName, treeData[functionName][transactionName].path, functionObject, [], "Transaction");
+        var decodedTransactionObject = new SubClass("Decoded", transactionObject, []);
+        var simulatedTransactionObject = new SubClass("Simulated", transactionObject, []);
+        for (const decodedTransactionName in treeData[functionName][transactionName].decoded) {
+          var decodedObject = new Transaction(decodedTransactionName, treeData[functionName][transactionName].decoded[decodedTransactionName].path, decodedTransactionObject, null, "DecodedTransaction");
+          decodedTransactionObject.childern?.push(decodedObject);
+        }
+        for (const simulatedTransactionName in treeData[functionName][transactionName].simulated) {
+          var simulatedObject = new Transaction(simulatedTransactionName, treeData[functionName][transactionName].simulated[simulatedTransactionName].path, simulatedTransactionObject, null, "SimulatedTransaction");
+          simulatedTransactionObject.childern?.push(simulatedObject);
+        }
+        transactionObject.childern?.push(simulatedTransactionObject);
+        transactionObject.childern?.push(decodedTransactionObject);
+        functionObject.childern?.push(transactionObject);
       }
       treeViewArray.push(functionObject);
     });
@@ -87,10 +90,10 @@ export class PendingTransactionTreeDataProvider implements vscode.TreeDataProvid
   private _onDidChangeTreeData: vscode.EventEmitter<FunctionName | undefined | null> = new vscode.EventEmitter<FunctionName | undefined | null>();
   readonly onDidChangeTreeData: vscode.Event<FunctionName | undefined | null> = this._onDidChangeTreeData.event;
 
-  public leaves : FunctionName[] | Transaction[] = [];
+  public leaves: FunctionName[] | Transaction[] = [];
 
   getTreeItem(element: FunctionName): vscode.TreeItem {
-      return element;
+    return element;
   }
 
   async getChildren(element?: FunctionName): Promise<any> {
@@ -107,9 +110,9 @@ export class PendingTransactionTreeDataProvider implements vscode.TreeDataProvid
   }
 
   async refresh(): Promise<void> {
-      this._onDidChangeTreeData.fire(undefined);
-      // this.leaves = await createTreeView();
-      return ;
+    this._onDidChangeTreeData.fire(undefined);
+    // this.leaves = await createTreeView();
+    return;
   }
 }
 
