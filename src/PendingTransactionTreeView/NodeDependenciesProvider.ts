@@ -94,7 +94,7 @@ export class PendingTransactionTreeDataProvider implements vscode.TreeDataProvid
   }
 
   async getChildren(element?: FunctionName): Promise<any> {
-    console.log('Get Children ======================>>>>>>>')
+    console.log('Get Children ======================>>>>>>>');
     if (element) {
       console.log('Get Children Element ======================>>>>>>>', element);
       // const leaves = await getTreeViewChildren(element);

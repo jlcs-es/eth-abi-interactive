@@ -189,7 +189,7 @@
         },
         {
           "command": "sol-exec.send",
-          "when": "view == sol-exec.pendingTxn && viewItem == pendingTransaction",
+          "when": "view == sol-exec.pendingTxn && viewItem == Transaction",
           "group": "inline"
         },
         {

@@ -2,7 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import * as vscode from 'vscode';
 import { STATE } from '../state';
-
+const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
+const api: any = ethcodeExtension.exports;
 function createJsonObject(directoryPath: any) {
     const jsonObject: any = {};
 
@@ -69,9 +70,28 @@ const deleteTransactionJson = (input: any) => {
     fs.unlinkSync(input.path);
     console.log('-------------------------------------------------deleteTransactionJson-------------------------------------------------');
 };
+
+const sendTransactionJson = async (input: any , channel: vscode.OutputChannel) => {
+    const wallet: any = await api.wallet.get();
+    console.log("Wallet address : ", wallet.address);
+    // read file
+    const transaction = fs.readFileSync(input.path);
+    const data = JSON.parse(transaction.toString());
+    console.log(data);
+    wallet.sendTransaction(data).then((result: any) => {
+        channel.appendLine(`Transaction hash: ${result.hash}`);
+    }).catch((error: any) => {
+        if (error.reason === undefined) {
+            channel.appendLine(`Error: ${error.message}`);
+        } else {
+            channel.appendLine(`Error: ${error.reason}`);
+        }
+    });
+};
 export {
     read,
     editTransactionJson,
-    deleteTransactionJson
+    deleteTransactionJson,
+    sendTransactionJson
     
 };
