@@ -65,6 +65,9 @@ const editTransactionJson = async (input: any) => {
     const document = await vscode.workspace.openTextDocument(input.path);
     const editor = await vscode.window.showTextDocument(document);
     editor.revealRange(new vscode.Range(0, 0, 0, 0));
+    if (editor) {
+      vscode.commands.executeCommand('editor.action.formatDocument');
+    }
 };
 
 const deleteTransactionJson = (input: any) => {
