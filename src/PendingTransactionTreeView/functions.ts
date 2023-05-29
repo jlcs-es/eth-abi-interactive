@@ -57,7 +57,7 @@ const read = async () => {
     console.log('-------------------------------------------------jsonObject-------------------------------------------------');
     console.log(jsonObject);
     // write to file
-    fs.writeFileSync(`${path.join(basePath, `artifacts`, `sol-exec`, `readTransaction.json`)}`, JSON.stringify(jsonObject, null, 4));
+    fs.writeFileSync(`${path.join(basePath, `artifacts`, `sol-exec`, `readTransaction.json`)}`, JSON.stringify(jsonObject, null, 2));
     return jsonObject;
 };
 
@@ -65,9 +65,6 @@ const editTransactionJson = async (input: any) => {
     const document = await vscode.workspace.openTextDocument(input.path);
     const editor = await vscode.window.showTextDocument(document);
     editor.revealRange(new vscode.Range(0, 0, 0, 0));
-    if (editor) {
-      vscode.commands.executeCommand('editor.action.formatDocument');
-    }
 };
 
 const deleteTransactionJson = (input: any) => {
@@ -127,7 +124,7 @@ const writeDecodedTransaction = async (decodedTransaction: any, input: any) => {
         };
         fs.writeFileSync(
             path.join(`${folderPath}`, `${epochTime}_decoded_tx.json`),
-            JSON.stringify(decodedTx),
+            JSON.stringify(decodedTx,null, 2),
         );
         return path.join(`${folderPath}`, `${epochTime}_decoded_tx.json`);
     } catch (error: any) {
@@ -150,7 +147,7 @@ const writeSimulatedTransaction = async (simulatedTransaction: any, input: any) 
         };
         fs.writeFileSync(
             path.join(`${folderPath}`, `${epochTime}_simulated_tx.json`),
-            JSON.stringify(decodedTx),
+            JSON.stringify(decodedTx,null, 2),
         );
         return path.join(`${folderPath}`, `${epochTime}_simulated_tx.json`);
     } catch (error: any) {

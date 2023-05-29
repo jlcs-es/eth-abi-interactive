@@ -254,7 +254,7 @@ const writeTransaction = async (tx: any, functionName: any) => {
         // const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(JSON.stringify(tx)));
         const epochTime = Date.now();
         console.log(epochTime);
-        fs.writeFileSync(`${path.join(`${folderPath}`,`${epochTime}_tx.json`)}`, JSON.stringify(tx));
+        fs.writeFileSync(`${path.join(`${folderPath}`,`${epochTime}_tx.json`)}`, JSON.stringify(tx,null,2));
         return `${path.join(`${folderPath}`,`${epochTime}_tx.json`)}`;
     } catch (error: any) {
         if (error.reason === undefined) {
