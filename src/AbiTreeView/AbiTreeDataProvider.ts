@@ -41,7 +41,6 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
     } else if (element.abi.type === "function") {
       const value = inputsEthcode.find((i: any) => i.name === element.abi.name);
       for (const input of value.inputs) {
-        console.log(input.type, input.value , input.name);
         leaves.push(
           new Abi(
             (!input.name && value.stateMutability === "payable") ? "payableValue" : input.name,
@@ -63,6 +62,5 @@ export class AbiTreeDataProvider implements TreeDataProvider<Abi> {
 
   refresh(item?: Abi): void {
     this._onDidChangeTreeData.fire(item);
-    console.log("refreshed");
   }
 }

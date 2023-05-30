@@ -223,9 +223,6 @@ const createTransactionObject = async (func: Abi, channel: vscode.OutputChannel)
 const createDirectoryIfNotExists = (path: string): void => {
     if (!fs.existsSync(path)) {
         fs.mkdirSync(path, { recursive: true });
-        console.log(`Directory '${path}' created.`);
-    } else {
-        console.log(`Directory '${path}' already exists.`);
     }
 };
 
@@ -249,11 +246,8 @@ const checkFolder = async (folderName: any) => {
 
 const writeTransaction = async (tx: any, functionName: any) => {
     try {
-        console.log(typeof tx);
         const folderPath = await checkFolder(`${functionName}`);
-        // const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(JSON.stringify(tx)));
         const epochTime = Date.now();
-        console.log(epochTime);
         fs.writeFileSync(`${path.join(`${folderPath}`,`${epochTime}_tx.json`)}`, JSON.stringify(tx,null,2));
         return `${path.join(`${folderPath}`,`${epochTime}_tx.json`)}`;
     } catch (error: any) {
@@ -268,12 +262,9 @@ const writeTransaction = async (tx: any, functionName: any) => {
 const create = async (func: Abi, channel: vscode.OutputChannel, pendingTransactionTreeView: any) => {
     channel.appendLine(`Creating transaction ${func.abi.name} ...`);
     const tx = await createTransactionObject(func, channel);
-    console.log(tx);
     const path = await writeTransaction(tx, func.abi.name);
-    console.log(path);
     channel.appendLine(`Transaction created successfully : ${path}`);
     await pendingTransactionTreeView.refresh();
-    console.log('-------------------------------------------------read-------------------------------------------------');
     await read();
     return;
 };

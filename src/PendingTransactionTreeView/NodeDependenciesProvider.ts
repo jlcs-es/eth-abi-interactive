@@ -59,7 +59,6 @@ class SubClass extends vscode.TreeItem {
 
 async function createTreeView() {
   const treeData = await readJson();
-  console.log('treeView ------>>>>', treeData);
   var treeViewArray: Array<FunctionName> = [];
   if (Object.keys(treeData).length > 0) {
     Object.keys(treeData).map((functionName) => {
@@ -97,14 +96,10 @@ export class PendingTransactionTreeDataProvider implements vscode.TreeDataProvid
   }
 
   async getChildren(element?: FunctionName): Promise<any> {
-    console.log('Get Children ======================>>>>>>>');
     if (element) {
-      console.log('Get Children Element ======================>>>>>>>', element);
-      // const leaves = await getTreeViewChildren(element);
       return element.childern;
     } else {
       const leaves = await createTreeView();
-      console.log('Get Children ======================>>>>>>>', this.leaves);
       return leaves;
     }
   }

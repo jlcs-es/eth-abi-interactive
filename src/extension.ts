@@ -100,7 +100,6 @@ export async function activate(context: vscode.ExtensionContext) {
       callContract(func, channel);
     }),
     vscode.commands.registerCommand('sol-exec.createTransaction', async (func: Abi) => {
-      console.log(func);
       await create(func, channel, pendingTransactionTreeView);
       
     }),
@@ -132,27 +131,22 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("sol-exec.simulate", async (input: any) => {
       channel.appendLine(`Simulating transaction ...`);
       await simulateTransactionJson(input,channel);
-      console.log(input);
     }),
     vscode.commands.registerCommand("sol-exec.decode", async (input: any) => {
       channel.appendLine(`Decoding transaction ...`);
       await decodeTransactionJson(input,channel);
-      console.log(input);
     }),
     vscode.commands.registerCommand("sol-exec.edit", async (input: any) => {
       channel.appendLine(`Editing transaction ...`);
       await editTransactionJson(input);
-      console.log(input);
     }),
     vscode.commands.registerCommand("sol-exec.send", async (input: any) => {
       channel.appendLine(`Sending transaction ...`);
       sendTransactionJson(input,channel);
-      console.log(input);
     }),
     vscode.commands.registerCommand("sol-exec.delete", async (input: any) => {
       channel.appendLine(`Deleting transaction ...`);
       deleteTransactionJson(input);
-      console.log(input);
     }),
   );
 
