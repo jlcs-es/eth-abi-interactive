@@ -41,12 +41,12 @@ function createJsonObject(directoryPath: any) {
     return jsonObject;
 }
 
-const read = async () => {
+const read = async ()  => {
     const basePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
     if (basePath === undefined) {
         throw new Error("No workspace folder found");
     }
-    const folderPath = path.join(basePath, `artifacts`, `sol-exec`, `${STATE.currentContract}.sol`);
+    const folderPath: string = path.join(basePath, `artifacts`, `sol-exec`, `${STATE.currentContract}.sol`);
     // if path does not exist console error
     if (!fs.existsSync(folderPath)) {
         return;
@@ -135,12 +135,12 @@ const sendTransactionJson = async (input: any, channel: vscode.OutputChannel) =>
     const transaction = fs.readFileSync(input.path);
     const data = JSON.parse(transaction.toString());
     wallet.sendTransaction(data).then((result: any) => {
-        channel.appendLine(`Transaction hash: ${result.hash}`);
+        channel.appendLine(`Transaction hash > ${result.hash}`);
     }).catch((error: any) => {
         if (error.reason === undefined) {
-            channel.appendLine(`Error: ${error.message}`);
+            channel.appendLine(`Error > ${error.message}`);
         } else {
-            channel.appendLine(`Error: ${error.reason}`);
+            channel.appendLine(`Error > ${error.reason}`);
         }
     });
 };
@@ -155,11 +155,11 @@ const decode = async (input: any, channel: vscode.OutputChannel) => {
         return decodedData;
     } catch (error: any) {
         if (error.reason === undefined) {
-            channel.appendLine(`Error: ${error.message}`);
-            console.log(`Error: ${error}`);
+            channel.appendLine(`Error > ${error.message}`);
+            console.log(`Error > ${error}`);
         } else {
-            channel.appendLine(`Error: ${error.reason}`);
-            console.log(`Error: ${error}`);
+            channel.appendLine(`Error > ${error.reason}`);
+            console.log(`Error > ${error}`);
         }
     }
 };
@@ -210,13 +210,13 @@ const decodeTransactionJson = async (input: any, channel: vscode.OutputChannel) 
     try {
         const decodedData = await decode(input, channel);
         const decodedTxPath = await writeDecodedTransaction(decodedData, input);
-        channel.appendLine(`Decoded transaction path: ${decodedTxPath}`);
+        channel.appendLine(`Decoded transaction ${input.label}}`);
     } catch (error: any) {
         if (error.reason === undefined) {
-            channel.appendLine(`Error: ${error.message}`);
+            channel.appendLine(`Error > ${error.message}`);
             console.log(`Error: ${error}`);
         } else {
-            channel.appendLine(`Error: ${error.reason}`);
+            channel.appendLine(`Error > ${error.reason}`);
             console.log(`Error: ${error}`);
         }
     }
@@ -239,10 +239,10 @@ const simulate = async (input: any, channel: vscode.OutputChannel) => {
         return txResponse;
     } catch (error: any) {
         if (error.reason === undefined) {
-            channel.appendLine(`Error: ${error.message}`);
+            channel.appendLine(`Error > ${error.message}`);
             console.log(`Error: ${error}`);
         } else {
-            channel.appendLine(`Error: ${error.reason}`);
+            channel.appendLine(`Error > ${error.reason}`);
             console.log(`Error: ${error}`);
         }
     }
@@ -252,13 +252,13 @@ const simulateTransactionJson = async (input: any, channel: vscode.OutputChannel
     try {
         const simulatedData = await simulate(input, channel);
         const simulatedTxPath = await writeSimulatedTransaction(simulatedData, input);
-        channel.appendLine(`Simulated transaction path: ${simulatedTxPath}`);
+        channel.appendLine(`Simulated transaction ${input.label}}`);
     } catch (error: any) {
         if (error.reason === undefined) {
-            channel.appendLine(`Error: ${error.message}`);
+            channel.appendLine(`Error > ${error.message}`);
             console.log(`Error: ${error}`);
         } else {
-            channel.appendLine(`Error: ${error.reason}`);
+            channel.appendLine(`Error > ${error.reason}`);
             console.log(`Error: ${error}`);
         }
     }

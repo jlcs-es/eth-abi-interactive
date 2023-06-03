@@ -112,12 +112,12 @@ export async function activate(context: vscode.ExtensionContext) {
       contractTreeView = await refreshContract(node, contractTreeDataProvider);
     }),
     vscode.commands.registerCommand("sol-exec.deployContract", async (input: any) => {
-      channel.appendLine(`Deploying contract ${STATE.currentContract} ...`);
+      // channel.appendLine(`Deploying contract ${STATE.currentContract} ...`);
       const contractAddress = await deployContract();
       if (contractAddress) {
-        channel.appendLine(`Contract deployed at : ${contractAddress}`);
+        channel.appendLine(`${STATE.currentContract} contract deployed > ${contractAddress}`);
       } else {
-        channel.appendLine(`Contract deployment failed.`);
+        channel.appendLine(`${STATE.currentContract} contract deployment failed.`);
       }
     }),
     vscode.commands.registerCommand("sol-exec.editContractAddress", async (input: any) => {
@@ -130,27 +130,27 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // pending transaction 
     vscode.commands.registerCommand("sol-exec.simulate", async (input: any) => {
-      channel.appendLine(`Simulating transaction ...`);
+      // channel.appendLine(`Simulating transaction ...`);
       await simulateTransactionJson(input,channel);
       pendingTransactionDataProvider.refresh();
     }),
     vscode.commands.registerCommand("sol-exec.decode", async (input: any) => {
-      channel.appendLine(`Decoding transaction ...`);
+      // channel.appendLine(`Decoding transaction ...`);
       await decodeTransactionJson(input,channel);
       pendingTransactionDataProvider.refresh();
     }),
     vscode.commands.registerCommand("sol-exec.edit", async (input: any) => {
-      channel.appendLine(`Editing transaction ...`);
+      // channel.appendLine(`Editing transaction ...`);
       await editTransactionJson(input);
       pendingTransactionDataProvider.refresh();
     }),
     vscode.commands.registerCommand("sol-exec.send", async (input: any) => {
-      channel.appendLine(`Sending transaction ...`);
+      // channel.appendLine(`Sending transaction ...`);
       sendTransactionJson(input,channel);
       pendingTransactionDataProvider.refresh();
     }),
     vscode.commands.registerCommand("sol-exec.delete", async (input: any) => {
-      channel.appendLine(`Deleting transaction ...`);
+      // channel.appendLine(`Deleting transaction ...`);
       deleteTransactionJson(input);
       pendingTransactionDataProvider.refresh();
     }),

@@ -49,20 +49,20 @@ const editInput = async (input: Abi, abiTreeDataProvider: any) => {
 };
 
 const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
-    channel.appendLine(`${func.abi.name}:${func.abi.stateMutability} >`);
+    channel.appendLine(`${func.abi.name}:${func.abi.stateMutability} > `);
     const functionName = func.abi.name;
     const totalArgsCount = func.children.length;
     let countArgs = 0;
 
     const wallet: any = await api.wallet.get();
-    channel.appendLine(`Wallet : ${wallet.address}`);
+    channel.appendLine(`Selected wallet > ${wallet.address}`);
 
     const abi = await api.contract.abi(STATE.currentContract);
 
     const contractAddress = await api.contract.getContractAddress(STATE.currentContract);
 
     if (contractAddress === "") {
-        channel.appendLine("No Contract available. Please deploy a contract first.");
+        channel.appendLine(`${STATE.currentContract} contract address not available. Please deploy this contract first.`);
         return;
     }
 
@@ -79,32 +79,32 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
             countArgs++;
         }
         else {
-            channel.appendLine(`Error : ${functionName} function's ${item.abi.name} param is empty`);
+            channel.appendLine(`Error > ${functionName} function's ${item.abi.name} param is empty`);
         }
     });
     if (countArgs !== totalArgsCount) {
-        channel.appendLine(`Error : ${functionName} function's arguments are not complete`);
+        channel.appendLine(`Error > ${functionName} function's arguments are not complete`);
         return;
     }
 
     executeTransaction(contractAddress, abi, wallet, func.abi.name, functionArgs).then((txResponse: any) => {
-        channel.appendLine(`Transaction hash : ${txResponse.transactionHash}`);
+        channel.appendLine(`Transaction hash > ${txResponse.transactionHash}`);
     }).catch((err: any) => {
         console.error(err);
-        channel.appendLine(`Error : ${err}`);
+        channel.appendLine(`Error > ${err}`);
     });
     channel.show(true);
 };
 
 const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
-    channel.appendLine(`${func.abi.name}:${func.abi.stateMutability} >`);
+    // channel.appendLine(`${func.abi.name}:${func.abi.stateMutability} > `);
     const abi = await api.contract.abi(STATE.currentContract);
     const contractAddress = await api.contract.getContractAddress(STATE.currentContract);
     const functionName = func.abi.name;
     const totalArgsCount = func.children.length;
     let countArgs = 0;
     if (contractAddress === "") {
-        channel.appendLine("No Contract available. Please deploy a contract first.");
+        channel.appendLine(`${STATE.currentContract} contract address not available. Please deploy this contract first.`);
         channel.show(true); // show before return
         return;
     }
@@ -115,12 +115,12 @@ const callContract = async (func: Abi, channel: vscode.OutputChannel) => {
             countArgs++;
         }
         else {
-            channel.appendLine(`Error : ${functionName} function's ${item.abi.name} param is empty`);
+            channel.appendLine(`Error > ${functionName} function's ${item.abi.name} param is empty`);
         }
     });
 
     if (countArgs !== totalArgsCount) {
-        channel.appendLine(`Error : ${functionName} function's arguments are not complete`);
+        channel.appendLine(`Error > ${functionName} function's arguments are not complete`);
         channel.show(true); // show before return
         return;
     }
@@ -182,7 +182,7 @@ const createTransactionObject = async (func: Abi, channel: vscode.OutputChannel)
         const totalArgsCount = func.children.length;
         let countArgs = 0;
         if (contractAddress === "") {
-            channel.appendLine("No Contract available. Please deploy a contract first.");
+            channel.appendLine(`${STATE.currentContract} contract address not available. Please deploy this contract first.`);
             return;
         }
         const functionArgs: any = [];
@@ -192,12 +192,12 @@ const createTransactionObject = async (func: Abi, channel: vscode.OutputChannel)
                 countArgs++;
             }
             else {
-                channel.appendLine(`Error : ${functionName} function's ${item.abi.name} param is empty`);
+                channel.appendLine(`Error > ${functionName} function's ${item.abi.name} param is empty`);
             }
         });
 
         if (countArgs !== totalArgsCount) {
-            channel.appendLine(`Error : ${functionName} function's arguments are not complete`);
+            channel.appendLine(`Error > ${functionName} function's arguments are not complete`);
             return;
         }
 
@@ -213,7 +213,7 @@ const createTransactionObject = async (func: Abi, channel: vscode.OutputChannel)
             provider,
             value,
         );
-        channel.appendLine(`Transaction: ${tx}`);
+        // channel.appendLine(`Transaction: ${tx}`);
         return tx;
     } catch (error) {
         console.error(error);
@@ -263,7 +263,7 @@ const create = async (func: Abi, channel: vscode.OutputChannel) => {
     channel.appendLine(`Creating transaction ${func.abi.name} ...`);
     const tx = await createTransactionObject(func, channel);
     const path = await writeTransaction(tx, func.abi.name);
-    channel.appendLine(`Transaction created successfully : ${path}`);
+    channel.appendLine(`Transaction created successfully`);
     await read();
     return;
 };
