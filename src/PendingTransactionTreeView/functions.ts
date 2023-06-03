@@ -37,7 +37,7 @@ function createJsonObject(directoryPath: any) {
             }
         });
     });
-
+    console.log(jsonObject);
     return jsonObject;
 }
 
@@ -63,7 +63,71 @@ const editTransactionJson = async (input: any) => {
 };
 
 const deleteTransactionJson = (input: any) => {
-    fs.unlinkSync(input.path);
+    // fs.unlinkSync(input.path);
+    console.log(input);
+    if (/^\d+_tx\.json$/.test(input.label)) {
+        console.log("tx");
+        if (input.childern[0].childern.length === 0 && input.childern[0].childern.length === 0) {
+            fs.unlinkSync(input.path);
+            return;
+        } else {
+            
+            input.childern.forEach((child: any) => {
+                child.childern.forEach((element: any) => {
+                    fs.unlinkSync(element.path);
+                });
+            });
+
+            fs.unlinkSync(input.path);
+
+            const isFolderEmpty = () => {
+                return new Promise((resolve, reject) => {
+                    fs.readdir(path.dirname(input.path), (err, files) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(files.length === 0);
+                        }
+                    });
+                });
+            };
+
+            const deleteFolder = () => {
+                return new Promise<void>((resolve, reject) => {
+                    fs.rmdir(input.path, { recursive: true }, (err) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            };
+
+            isFolderEmpty().then(empty => {
+                if (empty) {
+                    return deleteFolder();
+                } else {
+                    console.log('The folder is not empty. Skipping deletion.');
+                    return Promise.resolve();
+                }
+            }).then(() => {
+                console.log('Folder deleted successfully.');
+            }).catch(err => {
+                console.error('Error:', err);
+            });
+
+            return;
+        }
+    } else if (/^\d+_decoded_tx\.json$/.test(input.label)) {
+        console.log("decoded");
+        fs.unlinkSync(input.path);
+        return;
+    } else if (/^\d+_simulated_tx\.json$/.test(input.label)) {
+        console.log("simulated");
+        fs.unlinkSync(input.path);
+        return;
+    }
 };
 
 const sendTransactionJson = async (input: any, channel: vscode.OutputChannel) => {
@@ -110,7 +174,7 @@ const writeDecodedTransaction = async (decodedTransaction: any, input: any) => {
         };
         fs.writeFileSync(
             path.join(`${folderPath}`, `${epochTime}_decoded_tx.json`),
-            JSON.stringify(decodedTx,null, 2),
+            JSON.stringify(decodedTx, null, 2),
         );
         return path.join(`${folderPath}`, `${epochTime}_decoded_tx.json`);
     } catch (error: any) {
@@ -131,7 +195,7 @@ const writeSimulatedTransaction = async (simulatedTransaction: any, input: any) 
         };
         fs.writeFileSync(
             path.join(`${folderPath}`, `${epochTime}_simulated_tx.json`),
-            JSON.stringify(decodedTx,null, 2),
+            JSON.stringify(decodedTx, null, 2),
         );
         return path.join(`${folderPath}`, `${epochTime}_simulated_tx.json`);
     } catch (error: any) {
