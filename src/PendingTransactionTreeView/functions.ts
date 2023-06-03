@@ -210,7 +210,7 @@ const decodeTransactionJson = async (input: any, channel: vscode.OutputChannel) 
     try {
         const decodedData = await decode(input, channel);
         const decodedTxPath = await writeDecodedTransaction(decodedData, input);
-        channel.appendLine(`Decoded transaction ${input.label}}`);
+        channel.appendLine(`Decoded transaction ${input.label}`);
     } catch (error: any) {
         if (error.reason === undefined) {
             channel.appendLine(`Error > ${error.message}`);
@@ -252,7 +252,7 @@ const simulateTransactionJson = async (input: any, channel: vscode.OutputChannel
     try {
         const simulatedData = await simulate(input, channel);
         const simulatedTxPath = await writeSimulatedTransaction(simulatedData, input);
-        channel.appendLine(`Simulated transaction ${input.label}}`);
+        channel.appendLine(`Simulated transaction ${input.label}`);
     } catch (error: any) {
         if (error.reason === undefined) {
             channel.appendLine(`Error > ${error.message}`);

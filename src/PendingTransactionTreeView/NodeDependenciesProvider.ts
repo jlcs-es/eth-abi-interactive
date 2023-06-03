@@ -60,7 +60,7 @@ class SubClass extends vscode.TreeItem {
 async function createTreeView() {
   const treeData = await readJson();
   var treeViewArray: Array<FunctionName> = [];
-  if (Object.keys(treeData).length > 0) {
+  if (Object.keys(treeData).length > 0 && typeof Object.keys(treeData) === 'object' && Object.keys(treeData) !== null) {
     Object.keys(treeData).map((functionName) => {
       var functionObject = new FunctionName(functionName, []);
       for (const transactionName in treeData[functionName]) {
