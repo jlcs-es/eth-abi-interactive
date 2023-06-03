@@ -34,25 +34,24 @@ export class ConstructorTreeDataProvider implements vscode.TreeDataProvider<Cons
 
   async getChildren(element?: Constructor): Promise<Constructor[]> {
     const leaves: Constructor[] = [];
-    let constructorInputsEthcode: any;
     try {
-        constructorInputsEthcode = await api.contract.getConstructorInput(STATE.currentContract);
+      const constructorInputsEthcode: Array<any> = await api.contract.getConstructorInput(STATE.currentContract);
+        if (!element) {
+          for (const entry of constructorInputsEthcode) {
+              leaves.push(
+                  new Constructor(
+                      entry.name,
+                      entry,
+                      vscode.TreeItemCollapsibleState.None
+                  )
+              );
+          }
+      }
+      return leaves;
     } catch (error) {
         console.error(error);
         return leaves;
     }
-    if (!element) {
-        for (const entry of constructorInputsEthcode) {
-            leaves.push(
-                new Constructor(
-                    entry.name,
-                    entry,
-                    vscode.TreeItemCollapsibleState.None
-                )
-            );
-        }
-    }
-    return leaves;
   }
 
   private _onDidChangeTreeData: vscode.EventEmitter<Constructor | undefined> =
