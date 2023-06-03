@@ -259,12 +259,11 @@ const writeTransaction = async (tx: any, functionName: any) => {
     }
 };
 
-const create = async (func: Abi, channel: vscode.OutputChannel, pendingTransactionTreeView: any) => {
+const create = async (func: Abi, channel: vscode.OutputChannel) => {
     channel.appendLine(`Creating transaction ${func.abi.name} ...`);
     const tx = await createTransactionObject(func, channel);
     const path = await writeTransaction(tx, func.abi.name);
     channel.appendLine(`Transaction created successfully : ${path}`);
-    await pendingTransactionTreeView.refresh();
     await read();
     return;
 };
