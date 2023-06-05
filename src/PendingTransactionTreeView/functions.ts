@@ -6,8 +6,27 @@ import { ethers } from 'ethers';
 import { checkFolder } from '../AbiTreeView/functions';
 const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
+
+interface FunctionObject {
+    [key: string]: {
+        path: string | null;
+        decoded: {
+            [key: string]: {
+                path: string;
+            }
+        },
+        simulated: {
+            [key: string]: {
+                path: string;
+            }
+        },
+    };
+}
+interface TransactionObject {
+    [key: string]: FunctionObject;
+}
 function createJsonObject(directoryPath: any) {
-    const jsonObject: any = {};
+    const jsonObject: TransactionObject = {};
 
     fs.readdirSync(directoryPath).forEach((functionName) => {
         const functionPath = path.join(`${directoryPath}`, `${functionName}`);
@@ -25,19 +44,26 @@ function createJsonObject(directoryPath: any) {
                     simulated: {},
                 };
             } else if (/^\d+_decoded_tx\.json$/.test(fileName)) {
-                const tx = data.transactionName.split('|')[1];
-                jsonObject[functionName][tx].decoded[fileName] = {
-                    path: filePath,
+                const tx: string = data.transactionName.split('|')[1];
+                jsonObject[functionName] = {
+                    [tx]: {
+                        path: null,
+                        decoded: {
+                            [fileName]: {
+                                path: filePath
+                            },
+                        },
+                        simulated: {},
+                    },
                 };
             } else if (/^\d+_simulated_tx\.json$/.test(fileName)) {
                 const tx = data.transactionName.split('|')[1];
-                jsonObject[functionName][tx].simulated[fileName] = {
+                jsonObject[functionName][tx]["simulated"][fileName] = {
                     path: filePath,
                 };
             }
         });
     });
-    console.log(jsonObject);
     return jsonObject;
 }
 
