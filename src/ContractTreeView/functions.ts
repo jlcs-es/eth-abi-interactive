@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import { Contract as ContractTreeItem } from "./ContractTreeDataProvider";
 import { ContractFactory } from "ethers";
+import { read } from "../PendingTransactionTreeView/functions";
 
 const ethcodeExtension: any = vscode.extensions.getExtension("7finney.ethcode");
 const api: any = ethcodeExtension.exports;
@@ -58,6 +59,7 @@ const useContract = async (
     pendingTransactionDataProvider.refresh();
     pendingTransactionTreeView.message = undefined;
     STATE.flag = true;
+    await read();
 };
 
 const refreshContract = async (node: ContractTreeItem, contractTreeDataProvider: any): Promise<vscode.TreeView<ContractTreeItem>> => {

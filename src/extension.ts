@@ -3,11 +3,15 @@ import { ContractTreeDataProvider, Contract as ContractTreeItem } from "./Contra
 import { AbiTreeDataProvider, Abi } from "./AbiTreeView/AbiTreeDataProvider";
 import { STATE } from "./state";
 import { PendingTransactionTreeDataProvider } from "./PendingTransactionTreeView/NodeDependenciesProvider";
-import { callContract, editInput, sendTransaction } from "./AbiTreeView/functions";
+import { callContract, create, editInput, sendTransaction } from "./AbiTreeView/functions";
 import { deployContract, editContractAddress, refreshContract, updateContractAddress, useContract } from "./ContractTreeView/functions";
 import { ConstructorTreeDataProvider } from "./ConstructorTreeView/ConstructorTreeDataProvider";
 import { editConstructorInput } from "./ConstructorTreeView/functions";
-
+// import { read } from "./PendingTransactionTreeView/functions";
+import fs from 'fs';
+import path from 'path';
+import { decodeTransactionJson, deleteTransactionJson, editTransactionJson, sendTransactionJson, simulateTransactionJson } from "./PendingTransactionTreeView/functions";
+import { send } from "process";
 // const settings = {
 //   apiKey: "",
 //   network: Network.ETH_MAINNET,
@@ -95,6 +99,11 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('sol-exec.callContract', async (func: Abi) => {
       callContract(func, channel);
     }),
+    vscode.commands.registerCommand('sol-exec.createTransaction', async (func: Abi) => {
+      await create(func, channel);
+      pendingTransactionDataProvider.refresh();
+      
+    }),
     // contract 
     vscode.commands.registerCommand("sol-exec.useContract", async (node: ContractTreeItem) => {
       useContract(node, abiTreeDataProvider, abiTreeView, pendingTransactionDataProvider, pendingTransactionTreeView, constructorTreeDataProvider, constructorTreeView);
@@ -103,12 +112,12 @@ export async function activate(context: vscode.ExtensionContext) {
       contractTreeView = await refreshContract(node, contractTreeDataProvider);
     }),
     vscode.commands.registerCommand("sol-exec.deployContract", async (input: any) => {
-      channel.appendLine(`Deploying contract ${STATE.currentContract} ...`);
+      // channel.appendLine(`Deploying contract ${STATE.currentContract} ...`);
       const contractAddress = await deployContract();
       if (contractAddress) {
-        channel.appendLine(`Contract deployed at : ${contractAddress}`);
+        channel.appendLine(`${STATE.currentContract} contract deployed > ${contractAddress}`);
       } else {
-        channel.appendLine(`Contract deployment failed.`);
+        channel.appendLine(`${STATE.currentContract} contract deployment failed.`);
       }
     }),
     vscode.commands.registerCommand("sol-exec.editContractAddress", async (input: any) => {
@@ -119,187 +128,38 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("sol-exec.editConstructorInput", async (input: any) => {
       editConstructorInput(input, constructorTreeDataProvider);
     }),
+    // pending transaction 
+    vscode.commands.registerCommand("sol-exec.simulate", async (input: any) => {
+      // channel.appendLine(`Simulating transaction ...`);
+      await simulateTransactionJson(input,channel);
+      pendingTransactionDataProvider.refresh();
+    }),
+    vscode.commands.registerCommand("sol-exec.decode", async (input: any) => {
+      // channel.appendLine(`Decoding transaction ...`);
+      await decodeTransactionJson(input,channel);
+      pendingTransactionDataProvider.refresh();
+    }),
+    vscode.commands.registerCommand("sol-exec.edit", async (input: any) => {
+      // channel.appendLine(`Editing transaction ...`);
+      await editTransactionJson(input);
+      pendingTransactionDataProvider.refresh();
+    }),
+    vscode.commands.registerCommand("sol-exec.send", async (input: any) => {
+      // channel.appendLine(`Sending transaction ...`);
+      sendTransactionJson(input,channel);
+      pendingTransactionDataProvider.refresh();
+    }),
+    vscode.commands.registerCommand("sol-exec.delete", async (input: any) => {
+      // channel.appendLine(`Deleting transaction ...`);
+      deleteTransactionJson(input);
+      pendingTransactionDataProvider.refresh();
+    }),
   );
 
   context.subscriptions.push(abiTreeView);
   context.subscriptions.push(contractTreeView as any);
   context.subscriptions.push(pendingTransactionTreeView);
   context.subscriptions.push(channel);
-
-
-  // context.subscriptions.push(
-  //   vscode.commands.registerCommand(
-  //     "sol-exec.refreshTreeView",
-  //     () => {
-  //       pendingTransactionDataProvider.refresh();
-  //       // alchemy.ws.removeAllListeners();
-  //     }
-  //   )
-  // );
-
-  // alchemy.ws.on(
-  // 	{
-  // 		method: AlchemySubscription.PENDING_TRANSACTIONS,
-  // 		// toAddress: "0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b",
-  // 		toAddress: STATE.contractAddress,
-  // 	},
-  // 	(tx) => {
-  // 		if (STATE.flag) {
-  // 			console.log(tx);
-  // 			let obj = {
-  // 				label: tx.hash,
-  // 				collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 				children: [
-  // 					{
-  // 						label: `from`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.from,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `gas`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.gas,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `gasPrice`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.gasPrice,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `maxFeePerGas`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.maxFeePerGas,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `maxPriorityFeePerGas`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.maxPriorityFeePerGas,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `hash`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.hash,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `input`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.input,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `nonce`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.nonce,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `to`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.to,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `value`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.value,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `type`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.type,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `v`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.v,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `r`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.r,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 					{
-  // 						label: `s`,
-  // 						collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-  // 						children: [
-  // 							{
-  // 								label: tx.s,
-  // 								collapsibleState: vscode.TreeItemCollapsibleState.None
-  // 							}
-  // 						]
-  // 					},
-  // 				]
-  // 			};
-  // 			console.log(obj);
-  // 			myEmitter.emit('newPendingTransaction', obj);
-  // 		}
-  // 	}
-  // );
-  // myEmitter.on('newPendingTransaction', (arg) => {
-  // 	pendingTransactionDataProvider.loadData(arg);
-  // });
 
 }
 

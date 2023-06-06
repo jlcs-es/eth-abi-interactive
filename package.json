@@ -68,11 +68,6 @@
         "icon": "$(extensions-refresh)"
       },
       {
-        "command": "sol-exec.refreshTreeView",
-        "title": "Stop",
-        "icon": "$(debug-pause)"
-      },
-      {
         "command": "sol-exec.editInput",
         "title": "Edit input value",
         "icon": "$(edit)"
@@ -93,6 +88,11 @@
         "icon": "$(play)"
       },
       {
+        "command": "sol-exec.createTransaction",
+        "title": "Create Transaction",
+        "icon": "$(repo-create)"
+      },
+      {
         "command": "sol-exec.callContract",
         "title": "Call contract",
         "icon": "$(play)"
@@ -101,15 +101,35 @@
         "command": "sol-exec.deployContract",
         "title": "Deploy contract",
         "icon": "$(play)"
+      },
+      {
+        "command": "sol-exec.simulate",
+        "title": "Simulate Transaction",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "sol-exec.decode",
+        "title": "Decode Transaction",
+        "icon": "$(testing-show-as-list-icon)"
+      },
+      {
+        "command": "sol-exec.edit",
+        "title": "Edit Transaction",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "sol-exec.send",
+        "title": "Send Transaction",
+        "icon": "$(play)"
+      },
+      {
+        "command": "sol-exec.delete",
+        "title": "Delete Transaction",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
       "view/title": [
-        {
-          "command": "sol-exec.refreshTreeView",
-          "when": "view == sol-exec.pendingTxn",
-          "group": "navigation"
-        },
         {
           "command": "sol-exec.refreshContracts",
           "when": "view == sol-exec.contracts",
@@ -143,8 +163,38 @@
           "group": "inline"
         },
         {
+          "command": "sol-exec.createTransaction",
+          "when": "view == sol-exec.abis && viewItem == abiFunction",
+          "group": "inline"
+        },
+        {
           "command": "sol-exec.callContract",
           "when": "view == sol-exec.abis && viewItem == abiReadFunction",
+          "group": "inline"
+        },
+        {
+          "command": "sol-exec.simulate",
+          "when": "view == sol-exec.pendingTxn && viewItem == Transaction",
+          "group": "inline"
+        },
+        {
+          "command": "sol-exec.decode",
+          "when": "view == sol-exec.pendingTxn && viewItem == Transaction",
+          "group": "inline"
+        },
+        {
+          "command": "sol-exec.edit",
+          "when": "view == sol-exec.pendingTxn && (viewItem == Transaction || viewItem == DecodedTransaction || viewItem == SimulatedTransaction )  ",
+          "group": "inline"
+        },
+        {
+          "command": "sol-exec.send",
+          "when": "view == sol-exec.pendingTxn && viewItem == Transaction",
+          "group": "inline"
+        },
+        {
+          "command": "sol-exec.delete",
+          "when": "view == sol-exec.pendingTxn && (viewItem == Transaction || viewItem == DecodedTransaction || viewItem == SimulatedTransaction )",
           "group": "inline"
         }
       ]
