@@ -22,7 +22,7 @@ interface FunctionObject {
         },
     };
 }
-interface TransactionObject {
+export interface TransactionObject {
     [key: string]: FunctionObject;
 }
 function createJsonObject(directoryPath: any) {
@@ -67,7 +67,7 @@ function createJsonObject(directoryPath: any) {
     return jsonObject;
 }
 
-const read = async ()  => {
+const read = async () : Promise< TransactionObject | undefined> => {
     const basePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
     if (basePath === undefined) {
         throw new Error("No workspace folder found");
@@ -77,7 +77,7 @@ const read = async ()  => {
     if (!fs.existsSync(folderPath)) {
         return;
     }
-    const jsonObject: any = createJsonObject(`${folderPath}`);
+    const jsonObject: TransactionObject = createJsonObject(`${folderPath}`);
     fs.writeFileSync(`${path.join(basePath, `artifacts`, `sol-exec`, `readTransaction.json`)}`, JSON.stringify(jsonObject, null, 2));
     return jsonObject;
 };
@@ -157,7 +157,7 @@ const deleteTransactionJson = (input: any) => {
 };
 
 const sendTransactionJson = async (input: any, channel: vscode.OutputChannel) => {
-    const wallet: any = await api.wallet.get();
+    const wallet: any = await api.wallet.get(STATE.currentAccount);
     const transaction = fs.readFileSync(input.path);
     const data = JSON.parse(transaction.toString());
     wallet.sendTransaction(data).then((result: any) => {
@@ -250,7 +250,7 @@ const decodeTransactionJson = async (input: any, channel: vscode.OutputChannel) 
 
 const simulate = async (input: any, channel: vscode.OutputChannel) => {
     try {
-        const wallet: any = await api.wallet.get();
+        const wallet: any = await api.wallet.get(STATE.currentAccount);
         const provider = await api.provider.get();
         const transaction = fs.readFileSync(input.path);
         const txObject = JSON.parse(transaction.toString());

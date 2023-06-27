@@ -6,6 +6,8 @@ class Status {
     // May these comments be enough for my forgiveness
     public currentContract: string | undefined; // Current contract json ABI file selected
     public contractAddress: string | undefined; // Current Smart Contract deployed address
+    public currentAccount: string | undefined; // Current Account address
+    public currentNetwork: string | undefined; 
     public contract: Contract | undefined; // Current Smart Contract Web3 object
     public flag = false; // Flag to check if the user has selected a contract
     constructor() {}

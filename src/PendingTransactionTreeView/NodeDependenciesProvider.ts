@@ -28,7 +28,7 @@ class Transaction extends vscode.TreeItem {
   contextValue: string;
   constructor(
     public transactionName: string,
-    public path: string,
+    public path: string | null,
     public parent: FunctionName | SubClass,
     public childern: SubClass[] | null,
     public context: string
@@ -59,9 +59,12 @@ class SubClass extends vscode.TreeItem {
 
 async function createTreeView() {
   const treeData = await readJson();
+  if (treeData === undefined) {
+    return [];
+  }
   var treeViewArray: Array<FunctionName> = [];
   if (Object.keys(treeData).length > 0 && typeof Object.keys(treeData) === 'object' && Object.keys(treeData) !== null) {
-    Object.keys(treeData).map((functionName) => {
+    Object.keys(treeData).map((functionName: any) => {
       var functionObject = new FunctionName(functionName, []);
       for (const transactionName in treeData[functionName]) {
         var transactionObject = new Transaction(transactionName, treeData[functionName][transactionName].path, functionObject, [], "Transaction");

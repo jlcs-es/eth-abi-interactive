@@ -12,6 +12,9 @@ import fs from 'fs';
 import path from 'path';
 import { decodeTransactionJson, deleteTransactionJson, editTransactionJson, sendTransactionJson, simulateTransactionJson } from "./PendingTransactionTreeView/functions";
 import { send } from "process";
+import { Account, AccountTreeDataProvider } from "./AccountTreeView/AccountTreeDataProvider";
+import { ethers } from "ethers";
+import { updateMsg } from "./AccountTreeView/funtions";
 // const settings = {
 //   apiKey: "",
 //   network: Network.ETH_MAINNET,
@@ -32,6 +35,20 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const channel = vscode.window.createOutputChannel("Solidity execute!");
 
+  // Accout Tree View
+  const accountTreeDataProvider = new AccountTreeDataProvider(
+    vscode.workspace.workspaceFolders?.[0].uri.fsPath
+  );
+
+  const accountTreeView = vscode.window.createTreeView("sol-exec.account", {
+    treeDataProvider: accountTreeDataProvider,
+  });
+
+  if (STATE.currentAccount === undefined) {
+    accountTreeView.message = "No account selected";
+  } else {
+    accountTreeView.message = `${STATE.currentAccount} | ${api.provider.network.get()}`;
+  }
   // Contract Tree View
   const contractTreeDataProvider = new ContractTreeDataProvider(
     vscode.workspace.workspaceFolders?.[0].uri.fsPath
@@ -86,6 +103,15 @@ export async function activate(context: vscode.ExtensionContext) {
     updateContractAddress(STATE.currentContract, abiTreeView, constructorTreeView, pendingTransactionTreeView);
   });
 
+  api.events.updateAccountList.event(() => {
+    accountTreeDataProvider.refresh();
+  });
+
+    api.events.network.event(async (network: string) => {
+      console.log("network", network);
+      STATE.currentNetwork = network;
+      updateMsg(accountTreeView);
+    });
 
   // functions
   context.subscriptions.push(
@@ -102,7 +128,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('sol-exec.createTransaction', async (func: Abi) => {
       await create(func, channel);
       pendingTransactionDataProvider.refresh();
-      
+
     }),
     // contract 
     vscode.commands.registerCommand("sol-exec.useContract", async (node: ContractTreeItem) => {
@@ -131,12 +157,12 @@ export async function activate(context: vscode.ExtensionContext) {
     // pending transaction 
     vscode.commands.registerCommand("sol-exec.simulate", async (input: any) => {
       // channel.appendLine(`Simulating transaction ...`);
-      await simulateTransactionJson(input,channel);
+      await simulateTransactionJson(input, channel);
       pendingTransactionDataProvider.refresh();
     }),
     vscode.commands.registerCommand("sol-exec.decode", async (input: any) => {
       // channel.appendLine(`Decoding transaction ...`);
-      await decodeTransactionJson(input,channel);
+      await decodeTransactionJson(input, channel);
       pendingTransactionDataProvider.refresh();
     }),
     vscode.commands.registerCommand("sol-exec.edit", async (input: any) => {
@@ -146,13 +172,28 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand("sol-exec.send", async (input: any) => {
       // channel.appendLine(`Sending transaction ...`);
-      sendTransactionJson(input,channel);
+      sendTransactionJson(input, channel);
       pendingTransactionDataProvider.refresh();
     }),
     vscode.commands.registerCommand("sol-exec.delete", async (input: any) => {
       // channel.appendLine(`Deleting transaction ...`);
       deleteTransactionJson(input);
       pendingTransactionDataProvider.refresh();
+    }),
+    // account
+    vscode.commands.registerCommand("sol-exec.createAccount", async () => {
+      await vscode.commands.executeCommand("ethcode.account.create");
+    }),
+    vscode.commands.registerCommand("sol-exec.useAccount", async (node: Account) => {
+      console.log(node);
+      STATE.currentAccount = node.label;
+      updateMsg(accountTreeView);
+    }),
+    vscode.commands.registerCommand("sol-exec.copyAccountAddress", async (node: any) => {
+      vscode.env.clipboard.writeText(node.label);
+    }),
+    vscode.commands.registerCommand("sol-exec.selectNetwork", async () => {
+      await vscode.commands.executeCommand("ethcode.network.select");
     }),
   );
 
@@ -164,3 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() { }
+function fetch(apiURL: string) {
+  throw new Error("Function not implemented.");
+}
+

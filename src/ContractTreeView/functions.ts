@@ -68,7 +68,7 @@ const refreshContract = async (node: ContractTreeItem, contractTreeDataProvider:
 
 const deployContract = async () => {
     const provider = await api.provider.get();
-    const wallet = await api.wallet.get();
+    const wallet = await api.wallet.get(STATE.currentAccount);
     const compiledOutput = await vscode.workspace.findFiles(`**/${STATE.currentContract}.json`, '', 1);
     const abi = JSON.parse(fs.readFileSync(compiledOutput[0].fsPath, "utf8")).abi;
     const bytecode = JSON.parse(fs.readFileSync(compiledOutput[0].fsPath, "utf8")).bytecode;
