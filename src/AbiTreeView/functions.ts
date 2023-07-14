@@ -54,7 +54,7 @@ const sendTransaction = async (func: Abi, channel: vscode.OutputChannel) => {
     const totalArgsCount = func.children.length;
     let countArgs = 0;
 
-    const wallet: any = await api.wallet.get();
+    const wallet: any = await api.wallet.get(STATE.currentAccount);
     channel.appendLine(`Selected wallet > ${wallet.address}`);
 
     const abi = await api.contract.abi(STATE.currentContract);
@@ -201,7 +201,7 @@ const createTransactionObject = async (func: Abi, channel: vscode.OutputChannel)
             return;
         }
 
-        const wallet: any = await api.wallet.get();
+        const wallet: any = await api.wallet.get(STATE.currentAccount);
         const provider: any = await api.provider.get();
         const value: any = ethers.utils.parseEther("0");
         const tx = await generateContractTransaction(

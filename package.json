@@ -42,6 +42,10 @@
     "views": {
       "sol-exec-container": [
         {
+          "id": "sol-exec.account",
+          "name": "Accounts"
+        },
+        {
           "id": "sol-exec.contracts",
           "name": "Contracts"
         },
@@ -68,9 +72,24 @@
         "icon": "$(extensions-refresh)"
       },
       {
+        "command": "sol-exec.createAccount",
+        "title": "Create new account",
+        "icon": "$(plus)"
+      },
+      {
         "command": "sol-exec.editInput",
         "title": "Edit input value",
         "icon": "$(edit)"
+      },
+      {
+        "command": "sol-exec.deleteAccount",
+        "title": "Delete Account",
+        "icon": "$(trashcan)"
+      },
+      {
+        "command": "sol-exec.copyAccountAddress",
+        "title": "Copy Account Address",
+        "icon": "$(files)"
       },
       {
         "command": "sol-exec.editConstructorInput",
@@ -126,6 +145,11 @@
         "command": "sol-exec.delete",
         "title": "Delete Transaction",
         "icon": "$(trash)"
+      },
+      {
+        "command": "sol-exec.selectNetwork",
+        "title": "Select Network",
+        "icon": "$(plug)"
       }
     ],
     "menus": {
@@ -133,6 +157,16 @@
         {
           "command": "sol-exec.refreshContracts",
           "when": "view == sol-exec.contracts",
+          "group": "navigation"
+        },
+        {
+          "command": "sol-exec.createAccount",
+          "when": "view == sol-exec.account",
+          "group": "navigation"
+        },
+        {
+          "command": "sol-exec.selectNetwork",
+          "when": "view == sol-exec.account",
           "group": "navigation"
         }
       ],
@@ -145,6 +179,11 @@
         {
           "command": "sol-exec.editConstructorInput",
           "when": "view == sol-exec.constructor && viewItem == constructor",
+          "group": "inline"
+        },
+        {
+          "command": "sol-exec.copyAccountAddress",
+          "when": "view == sol-exec.account && viewItem == account",
           "group": "inline"
         },
         {
