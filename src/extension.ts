@@ -139,9 +139,9 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand("sol-exec.deployContract", async (input: any) => {
       // channel.appendLine(`Deploying contract ${STATE.currentContract} ...`);
-      const contractAddress = await deployContract();
+      const contractAddress = await deployContract(channel);
       if (contractAddress) {
-        channel.appendLine(`${STATE.currentContract} contract deployed > ${contractAddress}`);
+        channel.appendLine(`Contract Address > ${contractAddress}`);
       } else {
         channel.appendLine(`${STATE.currentContract} contract deployment failed.`);
       }
@@ -183,6 +183,12 @@ export async function activate(context: vscode.ExtensionContext) {
     // account
     vscode.commands.registerCommand("sol-exec.createAccount", async () => {
       await vscode.commands.executeCommand("ethcode.account.create");
+    }),
+    vscode.commands.registerCommand("sol-exec.exportAccount", async () => {
+      await vscode.commands.executeCommand("ethcode.account.export");
+    }),
+    vscode.commands.registerCommand("sol-exec.importAccount", async () => {
+      await vscode.commands.executeCommand("ethcode.account.import");
     }),
     vscode.commands.registerCommand("sol-exec.useAccount", async (node: Account) => {
       console.log(node);
